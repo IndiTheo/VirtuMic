@@ -1,0 +1,106 @@
+load("@rules_android//rules:rules.bzl", "android_binary")
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
+load("//tools:module_prop.bzl", "module_prop", "version_code_file")
+load("@version//:version.bzl", "VERSION")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    ".editorconfig",
+    "MODULE.bazel",
+])
+
+module_prop(
+    name = "generate_module_prop",
+    template = "systemless-overlay-module/module.prop.tmpl",
+    version = VERSION,
+    out = "systemless-overlay-module/module.prop",
+)
+
+version_code_file(
+    name = "generate_version_code",
+    version = VERSION,
+    out = "version_code.txt",
+)
+
+genrule(
+    name = "copy_virtumic_apk",
+    srcs = ["//virtumic-app:virtumic"],
+    outs = ["VirtuMic.apk"],
+    cmd = """
+      for f in $(locations //virtumic-app:virtumic); do
+        if [[ "$$f" == *virtumic.apk ]]; then
+          cp "$$f" "$@"
+          exit 0
+        fi
+      done
+      exit 1
+    """,
+)
+
+pkg_files(
+    name = "privapp_apk",
+    srcs = [":copy_virtumic_apk"],
+    prefix = "system/product/priv-app/VirtuMic",
+)
+
+pkg_zip(
+    name = "systemless_overlay",
+    srcs = glob(
+        ["systemless-overlay-module/**"],
+        exclude = ["systemless-overlay-module/module.prop.tmpl"],
+    ) + [
+        ":generate_module_prop",
+        ":privapp_apk",
+    ],
+    out = "virtumic-privilege-extension.zip",
+    strip_prefix = "systemless-overlay-module",
+)
+
+platform(
+    name = "arm64-v8a",
+    constraint_values = [
+        "@platforms//os:android",
+        "@platforms//cpu:arm64",
+    ],
+)
+
+platform(
+    name = "x86_64",
+    constraint_values = [
+        "@platforms//os:android",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+alias(
+    name = "service",
+    actual = "//virtumic-service:virtumic-service",
+)
+
+alias(
+    name = "core",
+    actual = "//virtumic-core:virtumic-core",
+)
+
+alias(
+    name = "app",
+    actual = "//virtumic-app:virtumic",
+)
+
+alias(
+    name = "overlay",
+    actual = ":systemless_overlay",
+)
+
+alias(
+    name = "lint",
+    actual = "//tools/lint:format.check",
+)
+
+alias(
+    name = "format",
+    actual = "//tools/lint:format",
+)

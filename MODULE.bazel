@@ -1,0 +1,172 @@
+module(name = "virtumic")
+
+bazel_dep(name = "rules_dokka", version = "0.0.0")
+git_override(
+    module_name = "rules_dokka",
+    remote = "https://github.com/Bencodes/rules_dokka.git",
+    commit = "a1ca224a62c0d86bb5261a4c3d8e25acffef6aca",
+)
+
+bazel_dep(name = "rules_android", version = "0.7.3")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "rules_robolectric", version = "4.14.1.2")
+bazel_dep(name = "aspect_rules_lint", version = "2.6.0")
+
+lint = use_extension("@aspect_rules_lint//lint:extensions.bzl", "tools")
+lint.ktlint(name = "com_github_pinterest_ktlint")
+use_repo(lint, "com_github_pinterest_ktlint")
+
+bazel_dep(name = "rules_kotlin", version = "2.4.10")
+bazel_dep(name = "rules_java", version = "9.3.0")
+bazel_dep(name = "rules_jvm_external", version = "7.1")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_android_ndk", version = "0.1.5")
+bazel_dep(name = "rules_cc", version = "0.2.16")
+bazel_dep(name = "protobuf", version = "33.4")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+
+# NDK is required for Jetpack Compose
+android_ndk_repository_extension = use_extension(
+    "@rules_android_ndk//:extension.bzl",
+    "android_ndk_repository_extension"
+)
+use_repo(android_ndk_repository_extension, "androidndk")
+register_toolchains("@androidndk//:all")
+
+remote_android_extensions = use_extension(
+    "@rules_android//bzlmod_extensions:android_extensions.bzl",
+    "remote_android_tools_extensions")
+use_repo(remote_android_extensions, "android_tools")
+
+android_sdk_repository_extension = use_extension(
+    "@rules_android//rules/android_sdk_repository:rule.bzl",
+    "android_sdk_repository_extension")
+use_repo(android_sdk_repository_extension, "androidsdk")
+
+register_toolchains("//tools/sdk_proxy:full_aosp_sdk_toolchain")
+
+# Dynamic version extension
+version = use_extension("//tools:version.bzl", "version_extension")
+use_repo(version, "version")
+
+
+maven.install(
+    name = "android",
+    boms = [
+        "androidx.compose:compose-bom:2026.04.01",
+    ],
+    artifacts = [
+        # COMING FROM BOM
+        "androidx.compose.ui:ui",
+        "androidx.compose.runtime:runtime",
+        "androidx.compose.material3:material3",
+        "androidx.compose.ui:ui-tooling-preview",
+        "androidx.compose.material:material-icons-core",
+        "androidx.compose.material:material-icons-extended",
+        "androidx.compose.foundation:foundation",
+        "androidx.compose.foundation:foundation-layout",
+        ## PINNED BECAUSE ANDROIDX CONFLICTS ITS OWN TRANSITIVE DEPENDENCIES
+        "androidx.collection:collection:1.5.0",
+        "androidx.collection:collection-jvm:1.5.0",
+        "androidx.lifecycle:lifecycle-common:2.9.4",
+        "androidx.lifecycle:lifecycle-viewmodel:2.9.2",
+        "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2",
+        "androidx.lifecycle:lifecycle-viewmodel-compose:2.9.2",
+        "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.9.2",
+        "androidx.lifecycle:lifecycle-runtime:2.8.7",
+        "androidx.lifecycle:lifecycle-runtime-ktx:2.8.7",
+        "androidx.lifecycle:lifecycle-runtime-compose:2.8.7",
+        "androidx.savedstate:savedstate:1.3.2",
+        "androidx.savedstate:savedstate-ktx:1.3.2",
+        # ADDITIONS OVER BOM
+        "androidx.activity:activity-compose:1.9.0",
+        "androidx.navigation:navigation-compose:2.7.7",
+        "androidx.media3:media3-exoplayer:1.5.1",
+        "androidx.media3:media3-common:1.5.1",
+        "androidx.media3:media3-datasource:1.5.1",
+        "androidx.media3:media3-session:1.5.1",
+        "androidx.media3:media3-extractor:1.5.1",
+        "com.google.guava:guava:33.0.0-android",
+        "androidx.core:core-ktx:1.13.1",
+        "androidx.lifecycle:lifecycle-livedata-ktx:2.9.2",
+        # TEST
+        "junit:junit:4.13.2",
+        "org.robolectric:robolectric:4.14.1",
+        "org.robolectric:shadows-framework:4.14.1",
+        "androidx.test:runner:1.6.2",
+        "androidx.test:rules:1.6.1",
+        "androidx.test:core:1.6.1",
+        "androidx.test:monitor:1.7.2",
+        "androidx.test.ext:junit:1.2.1",
+        # THIRD-PARTY
+        "com.indidevs.android:shellom:0.1.0-beta-1",
+        "com.indidevs.android:adbeesh:0.1.0-beta-2",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2",
+        "io.mockk:mockk-jvm:1.14.12",
+        "com.github.alorma.compose-settings:ui-tiles-android:3.1.0",
+    ],
+    repositories = [
+        "https://maven-central.storage-download.googleapis.com/maven2",
+        "https://repo1.maven.org/maven2",
+        "https://maven.google.com",
+        "https://androidx.dev",
+        "https://jitpack.io",
+    ],
+    fail_on_missing_checksum = False,
+    version_conflict_policy = "pinned",
+    lock_file = "//:android_install.json",
+    fail_if_repin_required = True,
+    repin_instructions = "!!! Run 'REPIN=1 bazel run @unpinned_android//:pin' to update the lockfile !!!",
+)
+
+maven.install(
+    name = "kotlin",
+    artifacts = [
+        "org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10",
+        "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:2.4.10",
+    ],
+    repositories = [
+        "https://maven-central.storage-download.googleapis.com/maven2",
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+    lock_file = "//:kotlin_install.json",
+    fail_if_repin_required = True,
+    repin_instructions = "!!! Run 'REPIN=1 bazel run @unpinned_kotlin//:pin' to update the lockfile !!!",
+)
+
+
+maven.install(
+    name = "security",
+    artifacts = [
+        "org.bouncycastle:bcprov-jdk18on:1.83",
+        "org.bouncycastle:bcpkix-jdk18on:1.83",
+    ],
+    repositories = [
+        "https://maven-central.storage-download.googleapis.com/maven2",
+        "https://repo1.maven.org/maven2",
+    ],
+    lock_file = "//:security_install.json",
+    fail_if_repin_required = True,
+    repin_instructions = "!!! Run 'REPIN=1 bazel run @unpinned_security//:pin' to update the lockfile !!!",
+)
+
+
+maven.install(
+    name = "framework",
+    artifacts = [
+        "indi.android:aosp-framework-library:35",
+    ],
+    repositories = [
+        "https://gitlab.com/api/v4/projects/81628475/packages/maven",
+    ],
+    lock_file = "//:framework_install.json",
+    fail_if_repin_required = True,
+    repin_instructions = "!!! Run 'REPIN=1 bazel run @unpinned_framework//:pin' to update the lockfile !!!",
+)
+
+use_repo(maven, "android", "unpinned_android", "kotlin", "unpinned_kotlin", "security", "unpinned_security", "framework", "unpinned_framework")

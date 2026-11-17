@@ -1,0 +1,119 @@
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("@rules_android//rules:rules.bzl", "android_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
+load("@rules_dokka//dokka:defs.bzl", "dokka", "dokka_config")
+load("//tools/bazel:android_test.bzl", "android_test_suite")
+
+exports_files(["src/main/AndroidManifest.xml"])
+
+kt_android_library(
+    name = "virtumic-core",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    deps = [],
+    manifest = "src/main/AndroidManifest.xml",
+    custom_package = "com.indidevs.virtumic.core",
+    visibility = ["//visibility:public"],
+)
+
+android_test_suite(
+    name = "virtumic_core_tests",
+    srcs = glob(["src/test/kotlin/**/*Test.kt"]),
+    custom_package = "com.indidevs.virtumic.core.test",
+    manifest = "src/main/AndroidManifest.xml",
+    associates = [":virtumic-core"],
+    tags = ["unit", "robolectric"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@android//:junit_junit",
+        "@android//:org_robolectric_robolectric",
+        "@android//:androidx_test_core",
+        "@android//:androidx_test_runner",
+        "@android//:androidx_test_ext_junit",
+    ],
+)
+
+dokka_config(
+    name = "docs_config",
+    skip_empty_packages = True,
+)
+
+# API Documentation
+dokka(
+    name = "docs_dir",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    deps = [
+        ":virtumic-core",
+    ],
+    config = ":docs_config",
+    format = "html",
+    module_name = "virtumic-core",
+)
+
+pkg_zip(
+    name = "docs",
+    srcs = [":docs_dir"],
+    out = "virtumic-core-docs.zip",
+)
+
+# Staging mapping for the AAR (reused by future Maven-structured staging targets)
+pkg_files(
+    name = "dist_flat_files",
+    srcs = [
+        ":virtumic-core.aar",
+    ],
+    prefix = "virtumic-core",
+)
+
+# Human-readable distribution for quick CI artifact access
+pkg_zip(
+    name = "dist_flat",
+    srcs = [":dist_flat_files"],
+)
+
+
+load("@rules_jvm_external//:defs.bzl", "java_export")
+load("@rules_jvm_external//private/rules:maven_publish.bzl", "maven_publish")
+load("@version//:version.bzl", "VERSION")
+
+
+# Metadata generator producing the .pom file with transitive dependencies
+java_export(
+    name = "virtumic-core-maven",
+    maven_coordinates = "com.indidevs.android.virtumic:virtumic-core:%s" % VERSION,
+    exports = [":virtumic-core"],
+    pom_template = "//virtumic-core:pom.tmpl",
+)
+
+# Publication tool for uploading AAR and POM to Maven repositories
+# Usage: bazel run --config=ci //virtumic-core:publish
+maven_publish(
+    name = "publish",
+    coordinates = "com.indidevs.android.virtumic:virtumic-core:%s" % VERSION,
+    artifact = ":virtumic-core.aar",
+    pom = ":virtumic-core-maven-pom",
+)
+
+# Internal rule to organize files into Maven repository directory structure
+pkg_files(
+    name = "staging_files",
+    srcs = [
+        ":virtumic-core.aar",
+        ":virtumic-core-maven-pom",
+        ":virtumic-core-maven-maven-source",
+        ":virtumic-core-maven-docs",
+    ],
+    prefix = "com/indidevs/android/virtumic/virtumic-core/%s" % VERSION,
+    renames = {
+        ":virtumic-core.aar": "virtumic-core-%s.aar" % VERSION,
+        ":virtumic-core-maven-pom": "virtumic-core-%s.pom" % VERSION,
+        ":virtumic-core-maven-maven-source": "virtumic-core-%s-sources.jar" % VERSION,
+        ":virtumic-core-maven-docs": "virtumic-core-%s-javadoc.jar" % VERSION,
+    },
+)
+
+# Maven-structured distribution for official releases (used by JReleaser)
+pkg_zip(
+    name = "dist_maven",
+    srcs = [":staging_files"],
+)

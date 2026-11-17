@@ -1,0 +1,115 @@
+# Run once via GitLab Web UI (Pipelines -> Run pipeline) on main to generate and store GPG release keys
+setup_gpg:
+  stage: infra
+  image: $CI_BASE_IMAGE
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+  allow_failure: true
+  variables:
+    REAL_NAME: "IndiDevs VirtuMic Automated Pipeline"
+    EMAIL: "automated-release-signer@indidevs.com"
+    PROJECT_COMMENT: "VirtuMic Project"
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - |
+      [ -n "${GITLAB_API_TOKEN:-}" ] || { echo "ERROR: GITLAB_API_TOKEN (with api scope) must be set first."; exit 1; }
+
+      BASE_KEYS_PRESENT=0
+      BASE_KEYS_TOTAL=3
+      [ -n "${GPG_SECRET_KEY:-}" ] && BASE_KEYS_PRESENT=$((BASE_KEYS_PRESENT + 1))
+      [ -n "${GPG_PASSPHRASE:-}" ] && BASE_KEYS_PRESENT=$((BASE_KEYS_PRESENT + 1))
+      [ -n "${GPG_PUBLIC_KEY:-}" ] && BASE_KEYS_PRESENT=$((BASE_KEYS_PRESENT + 1))
+
+      DERIVED_KEYS_MISSING=0
+      if [ -z "${GPG_FINGERPRINT:-}" ]; then
+        DERIVED_KEYS_MISSING=1
+      fi
+
+      if [ $BASE_KEYS_PRESENT -gt 0 ] && [ $BASE_KEYS_PRESENT -lt $BASE_KEYS_TOTAL ]; then
+        echo "ERROR: Partial GPG base keys detected ($BASE_KEYS_PRESENT/$BASE_KEYS_TOTAL present). Aborting to prevent inconsistency."
+        exit 1
+      fi
+
+      if [ $BASE_KEYS_PRESENT -eq $BASE_KEYS_TOTAL ] && [ $DERIVED_KEYS_MISSING -eq 0 ]; then
+        echo "CANCELLED: All GPG base keys and fingerprint already exist. Nothing to do."
+        exit 0
+      fi
+
+      if [ $BASE_KEYS_PRESENT -eq $BASE_KEYS_TOTAL ] && [ $DERIVED_KEYS_MISSING -eq 1 ]; then
+        echo "INFO: All GPG base keys are present, but GPG_FINGERPRINT is missing. Extracting fingerprint from existing secret key..."
+        export GNUPGHOME="/tmp/gnupg-extract"
+        mkdir -p -m 700 "$GNUPGHOME"
+        echo "$GPG_SECRET_KEY" | base64 -d | gpg --batch --import
+        KID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/ {print $5}')
+        GPG_FINGERPRINT=$(gpg --list-keys --with-colons $KID | awk -F: '/^fpr/ {print $10; exit}')
+
+        echo "=========================================="
+        echo "GPG Master Key Fingerprint:"
+        echo "$GPG_FINGERPRINT"
+        echo "=========================================="
+
+        curl --fail --silent --show-error \
+          --request POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables" \
+          --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+          --form "key=GPG_FINGERPRINT" --form "value=${GPG_FINGERPRINT}" --form "protected=true" --form "masked_and_hidden=false" || true
+
+        rm -rf ~/.gnupg /tmp/gnupg-extract
+        echo "SUCCESS: GPG fingerprint generated and published successfully from existing base keys."
+        exit 0
+      fi
+
+      echo "Generating 4096-bit RSA GPG Release Key (Auto Passphrase)..."
+      GPG_PASSPHRASE=$(openssl rand -hex 24)
+      GPG_PASSPHRASE_B64=$(echo -n "$GPG_PASSPHRASE" | base64 -w0)
+
+      gpg --batch --generate-key <<EOF
+      Key-Type: RSA
+      Key-Length: 4096
+      Name-Real: $REAL_NAME
+      Name-Email: $EMAIL
+      Name-Comment: $PROJECT_COMMENT
+      Passphrase: $GPG_PASSPHRASE
+      %commit
+      EOF
+
+      KID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/ {print $5}')
+      [ -n "$KID" ] || { echo "ERROR: Failed to generate GPG key ID!"; exit 1; }
+
+      GPG_PUBLIC_KEY=$(gpg --armor --export $KID | base64 -w0)
+      GPG_SECRET_KEY=$(gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --armor --export-secret-keys $KID | base64 -w0)
+      GPG_FINGERPRINT=$(gpg --list-keys --with-colons $KID | awk -F: '/^fpr/ {print $10; exit}')
+
+      echo "=========================================="
+      echo "GPG Master Key Fingerprint:"
+      echo "$GPG_FINGERPRINT"
+      echo "=========================================="
+
+      echo "Sending public key to Ubuntu keyserver..."
+      gpg --keyserver hkps://keyserver.ubuntu.com --send-keys $KID >/dev/null 2>&1 || echo "Warning: Keyserver send failed (can be done later)."
+
+      echo "Persisting GPG variables to GitLab CI/CD Settings..."
+
+      curl --fail --silent --show-error \
+        --request POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables" \
+        --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+        --form "key=GPG_PUBLIC_KEY" --form "value=${GPG_PUBLIC_KEY}" --form "protected=true" --form "masked_and_hidden=false" || true
+
+      curl --fail --silent --show-error \
+        --request POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables" \
+        --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+        --form "key=GPG_SECRET_KEY" --form "value=${GPG_SECRET_KEY}" --form "protected=true" --form "masked_and_hidden=true" || true
+
+      curl --fail --silent --show-error \
+        --request POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables" \
+        --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+        --form "key=GPG_PASSPHRASE" --form "value=${GPG_PASSPHRASE_B64}" --form "protected=true" --form "masked_and_hidden=true" || true
+
+      curl --fail --silent --show-error \
+        --request POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables" \
+        --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+        --form "key=GPG_FINGERPRINT" --form "value=${GPG_FINGERPRINT}" --form "protected=true" --form "masked_and_hidden=false" || true
+
+      echo "GPG release keys generated and persisted successfully!"
+  after_script:
+    - rm -rf ~/.gnupg

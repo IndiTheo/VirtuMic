@@ -1,0 +1,9 @@
+# VirtuMic Module Customization Script
+
+ui_print " _    ___      __        __  ____     "
+ui_print "| |  / (_)____/ /___  __/  |/  (_)____"
+ui_print "| | / / / ___/ __/ / / / /|_/ / / ___/"
+ui_print "| |/ / / /  / /_/ /_/ / /  / / / /__  "
+ui_print "|___/_/_/   \\__/\\__,_/_/  /_/_/\\___/"
+ui_print ""
+ui_print "- Installing VirtuMic Privilege Extension"

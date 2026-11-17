@@ -1,0 +1,44 @@
+project:
+  name: virtumic
+  description: "Virtual Microphone Framework for Android."
+  longDescription: >
+    VirtuMic is a privileged Android framework and library suite for injecting virtual microphone
+    audio streams into the system audio framework via AudioPolicy loopbacks, supporting both
+    ExoPlayer file streaming and targeted app audio capture.
+  authors:
+    - IndiDevs
+    - IndiTheo
+  license: MIT
+  links:
+    homepage: "https://gitlab.com/IndiDevs/VirtuMic"
+    documentation: "https://gitlab.com/IndiDevs/VirtuMic"
+  languages:
+    java:
+      groupId: com.indidevs.virtumic
+
+signing:
+  active: ALWAYS
+  pgp:
+    armored: true
+    mode: MEMORY
+
+deploy:
+  maven:
+    mavenCentral:
+      sonatype:
+        active: RELEASE
+        url: https://central.sonatype.com/api/v1/publisher
+        stagingRepositories:
+          - "{{env.JRELEASER_STAGING_REPOSITORY}}"
+        verifyPom: false
+    nexus2:
+      sonatype-snapshot:
+        active: SNAPSHOT
+        snapshotUrl: https://central.sonatype.com/repository/maven-snapshots/
+        applyMavenCentralRules: true
+        snapshotSupported: true
+        closeRepository: true
+        releaseRepository: true
+        stagingRepositories:
+          - "build/staging-deploy"
+        verifyPom: false

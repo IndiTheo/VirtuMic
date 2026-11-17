@@ -1,0 +1,38 @@
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("//tools/bazel:android_test.bzl", "android_test_suite")
+
+exports_files(["src/main/AndroidManifest.xml"])
+
+kt_android_library(
+    name = "virtumic-media3",
+    srcs = glob([
+        "src/main/kotlin/**/*.kt",
+    ]),
+    manifest = "src/main/AndroidManifest.xml",
+    custom_package = "com.indidevs.virtumic.media3",
+    deps = [
+        "@android//:androidx_media3_media3_exoplayer",
+        "@android//:androidx_media3_media3_common",
+        "@android//:androidx_annotation_annotation",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+android_test_suite(
+    name = "virtumic_media3_tests",
+    srcs = glob(["src/test/kotlin/**/*Test.kt"]),
+    custom_package = "com.indidevs.virtumic.media3.test",
+    manifest = "src/main/AndroidManifest.xml",
+    associates = [":virtumic-media3"],
+    tags = ["unit", "robolectric"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@android//:junit_junit",
+        "@android//:org_robolectric_robolectric",
+        "@android//:androidx_test_core",
+        "@android//:androidx_test_runner",
+        "@android//:androidx_test_ext_junit",
+        "@android//:androidx_media3_media3_exoplayer",
+        "@android//:androidx_media3_media3_common",
+    ],
+)

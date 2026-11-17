@@ -1,0 +1,101 @@
+load("@rules_android//rules:rules.bzl", "android_binary")
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("@rules_kotlin//kotlin:lint.bzl", "ktlint_test", "ktlint_fix")
+load("@rules_kotlin//kotlin:core.bzl", "kt_compiler_plugin")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
+load("//tools/bazel:android_test.bzl", "android_test_suite")
+
+kt_compiler_plugin(
+    name = "jetpack_compose_compiler_plugin",
+    id = "androidx.compose.compiler.plugins.kotlin",
+    target_embedded_compiler = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        "@kotlin//:org_jetbrains_kotlin_kotlin_compose_compiler_plugin_embeddable",
+    ],
+)
+
+kt_android_library(
+    name = "virtumic-app-lib",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    plugins = [":jetpack_compose_compiler_plugin"],
+    deps = [
+        "//virtumic-core",
+        "//virtumic-service",
+        "//lib/privilege-hub",
+        "@android//:com_indidevs_android_adbeesh",
+        "@android//:com_indidevs_android_shellom",
+        "@security//:org_bouncycastle_bcprov_jdk18on",
+        "@security//:org_bouncycastle_bcpkix_jdk18on",
+        "@android//:androidx_activity_activity_compose",
+        "@android//:androidx_compose_ui_ui",
+        "@android//:androidx_compose_foundation_foundation",
+        "@android//:androidx_compose_foundation_foundation_layout",
+        "@android//:androidx_compose_material3_material3",
+        "@android//:androidx_compose_material_material_icons_core",
+        "@android//:androidx_compose_material_material_icons_extended",
+        "@android//:androidx_compose_ui_ui_tooling_preview",
+        "@android//:androidx_navigation_navigation_compose",
+        "@android//:androidx_media3_media3_exoplayer",
+        "@android//:androidx_media3_media3_common",
+        "@android//:androidx_media3_media3_datasource",
+        "@android//:androidx_media3_media3_session",
+        "@android//:androidx_media3_media3_extractor",
+        "@android//:androidx_core_core",
+        "@android//:androidx_core_core_ktx",
+        "@android//:androidx_annotation_annotation",
+        "@android//:com_google_guava_guava",
+        "@android//:com_github_alorma_compose_settings_ui_tiles_android",
+    ],
+    resource_files = glob(["src/main/res/**"], allow_empty = True),
+    manifest = "src/main/AndroidManifest.xml",
+    exports_manifest = 1,
+    custom_package = "com.indidevs.virtumic",
+    visibility = ["//visibility:public"],
+)
+
+android_binary(
+    name = "virtumic",
+    manifest = "src/main/AndroidManifest.xml",
+    deps = [":virtumic-app-lib"],
+    visibility = ["//visibility:public"],
+    manifest_values = {
+        "minSdkVersion": "31",
+        "targetSdkVersion": "37",
+        "applicationId": "com.indidevs.virtumic",
+    },
+)
+
+# Staging mapping for the APK (reused by future Maven-structured staging targets)
+pkg_files(
+    name = "dist_flat_files",
+    srcs = [
+        ":virtumic",
+    ],
+    prefix = "virtumic-app",
+)
+
+# Human-readable distribution for quick CI artifact access
+pkg_zip(
+    name = "dist_flat",
+    srcs = [":dist_flat_files"],
+)
+
+android_test_suite(
+    name = "virtumic_app_tests",
+    srcs = glob(["src/test/kotlin/**/*Test.kt"]),
+    custom_package = "com.indidevs.virtumic.test",
+    manifest = "src/test/AndroidManifest.xml",
+    associates = [":virtumic-app-lib"],
+    tags = ["unit", "robolectric"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@android//:junit_junit",
+        "@android//:org_robolectric_robolectric",
+        "@android//:androidx_test_core",
+        "@android//:androidx_test_runner",
+        "@android//:androidx_test_ext_junit",
+        "@android//:androidx_media3_media3_common",
+    ],
+)

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>{groupId}</groupId>
+  <artifactId>{artifactId}</artifactId>
+  <version>{version}</version>
+  <packaging>aar</packaging>
+
+  <name>virtumic-core</name>
+  <description>
+    Core engine for VirtuMic virtual microphone framework.
+    Provides audio loopback functionality, system audio routing interception,
+    and PCM audio stream processing for injecting audio into the Android system as a live microphone feed.
+  </description>
+  <url>https://gitlab.com/IndiDevs/virtualmic</url>
+
+  <licenses>
+    <license>
+      <name>The MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>inditheo</id>
+      <name>IndiTheo</name>
+    </developer>
+    <developer>
+      <id>indidevs</id>
+      <name>IndiDevs</name>
+      <email>contact-project+indidevs-virtumic-development@incoming.gitlab.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:gitlab.com/IndiDevs/VirtuMic.git</connection>
+    <developerConnection>scm:git:ssh://gitlab.com/IndiDevs/VirtuMic.git</developerConnection>
+    <url>https://gitlab.com/IndiDevs/VirtuMic/-/tree/main</url>
+  </scm>
+
+  <properties>
+    <!-- Android -->
+    <android.compileSdkVersion>37</android.compileSdkVersion>
+    <android.minSdkVersion>31</android.minSdkVersion>
+  </properties>
+
+  <dependencies>
+    {dependencies}
+  </dependencies>
+</project>

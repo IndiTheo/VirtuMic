@@ -1,0 +1,456 @@
+---
+include:
+  - local: 'ci/keystore.gitlab-ci.yml'
+  - local: 'ci/gpg.gitlab-ci.yml'
+  - local: 'ci/build_ci_base_image.gitlab-ci.yml'
+  - local: 'ci/lint.gitlab-ci.yml'
+
+variables:
+  CI_BASE_IMAGE: "$CI_REGISTRY_IMAGE:latest"
+  MISE_CONFIG_FILE: "ci/mise.toml"
+
+default:
+  interruptible: true
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG =~ /^app-v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/
+    - if: $CI_COMMIT_TAG =~ /^core-v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/
+    - if: $CI_COMMIT_TAG =~ /^service-v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/
+
+cache:
+  key:
+    files:
+      - MODULE.bazel.lock
+    prefix: bazel-cache
+  paths:
+    - .bazel-cache/
+    - .bazel-repo-cache/
+
+stages:
+  - infra
+  - lint
+  - build
+  - docs
+  - publish
+  - release
+
+# --- BUILD ---
+
+# Build core library
+build_core_library:
+  stage: build
+  image: $CI_BASE_IMAGE
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - bazel build --config=ci //virtumic-core:dist_flat
+    - mkdir -p build/outputs
+    - unzip bazel-bin/virtumic-core/dist_flat.zip -d build/outputs
+  artifacts:
+    paths:
+      - build/outputs/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - changes:
+        - virtumic-core/**/*
+        - "**/{BUILD,BUILD.bazel}"
+        - "**/MODULE.bazel"
+
+# Build service library
+build_service_library:
+  stage: build
+  image: $CI_BASE_IMAGE
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - bazel build --config=ci //virtumic-service:virtumic-service
+  artifacts:
+    paths:
+      - bazel-bin/virtumic-service/virtumic-service.aar
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - changes:
+        - virtumic-service/**/*
+        - virtumic-core/**/*  # Service depends on core
+        - "**/{BUILD,BUILD.bazel}"
+        - "**/MODULE.bazel"
+
+# Build app
+build:app:
+  stage: build
+  image: $CI_BASE_IMAGE
+  artifacts:
+    paths:
+      - dist/virtumic-full.apk
+      - dist/virtumic-arm64.apk
+      - dist/virtumic-x86_64.apk
+      - dist/virtumic-privilege-extension.zip
+      - dist/version_code.txt
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - mkdir -p dist
+    - export VERSION="${CI_COMMIT_TAG#"app-v"}"
+    - bazel build --config=ci //:overlay //:generate_version_code
+    - cp bazel-bin/virtumic-privilege-extension.zip dist/virtumic-privilege-extension.zip
+    - cp bazel-bin/version_code.txt dist/version_code.txt
+    - bazel build --config=ci --android_platforms=//:arm64-v8a,//:x86_64 //virtumic-app:virtumic
+    - cp bazel-bin/virtumic-app/virtumic.apk dist/virtumic-full.apk
+    - bazel build --config=ci --android_platforms=//:arm64-v8a //virtumic-app:virtumic
+    - cp bazel-bin/virtumic-app/virtumic.apk dist/virtumic-arm64.apk
+    - bazel build --config=ci --android_platforms=//:x86_64 //virtumic-app:virtumic
+    - cp bazel-bin/virtumic-app/virtumic.apk dist/virtumic-x86_64.apk
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - changes:
+        - virtumic-app/**/*
+        - virtumic-service/**/*
+        - virtumic-core/**/*
+        - lib/privilege-hub/**/*
+        - systemless-overlay-module/**/*
+        - "**/{BUILD,BUILD.bazel}"
+        - "**/MODULE.bazel"
+
+# --- DOCS ---
+#
+build_docs:
+  stage: docs
+  image: $CI_BASE_IMAGE
+  before_script:
+    - eval "$(mise activate bash --quiet)"
+  script:
+    - bazel build --config=ci //virtumic-core:docs //virtumic-service:docs
+    - mkdir -p build/docs/core build/docs/service
+    - unzip -o bazel-bin/virtumic-core/virtumic-core-docs.zip -d build/docs/core
+    - unzip -o bazel-bin/virtumic-service/virtumic-service-docs.zip -d build/docs/service
+  artifacts:
+    expose_as: 'API Documentation'
+    paths:
+      - build/docs/
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+
+# --- PUBLISH (Internal) - Following adbeesh's publish_internal pattern EXACTLY ---
+
+# Publish core library internally
+publish_core_internal:
+  stage: publish
+  image: $CI_BASE_IMAGE
+  variables:
+    MAVEN_REPO: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+    MAVEN_USER: "gitlab-ci-token"
+    MAVEN_PASSWORD: "${CI_JOB_TOKEN}"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - bazel run --config=ci //virtumic-core:publish
+  needs: [ "build_core_library" ]
+
+# Publish service library internally
+publish_service_internal:
+  stage: publish
+  image: $CI_BASE_IMAGE
+  variables:
+    MAVEN_REPO: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+    MAVEN_USER: "gitlab-ci-token"
+    MAVEN_PASSWORD: "${CI_JOB_TOKEN}"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - bazel run --config=ci //virtumic-service:publish
+  needs: [ "build_service_library" ]
+
+# --- RELEASE & PREVIEW ARCHITECTURE  ---
+
+.component_base:
+  stage: release
+  image: $CI_BASE_IMAGE
+  variables:
+    GIT_DEPTH: 0
+    GIT_STRATEGY: clone
+
+.cliff_resolve: &cliff_resolve
+  - |
+    CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMPONENT}/**" --tag-pattern "${COMPONENT}-v[0-9]*")
+    if [ -z "$(git tag -l "${COMPONENT}-v*")" ]; then
+      TAG_NAME="${COMPONENT}-v0.1.0"
+      [ -n "${PRE_RELEASE:-}" ] && TAG_NAME="${TAG_NAME}-${PRE_RELEASE}.0"
+    else
+      TAG_NAME=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version --bump "${PRE_RELEASE:-auto}")
+    fi
+    DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME")
+    [ -z "$DESCRIPTION" ] && echo "No releasable changes for $COMPONENT." && exit 0
+    NEXT_VERSION="${TAG_NAME#"${COMPONENT}-v"}"
+    export TAG_NAME NEXT_VERSION DESCRIPTION
+
+.tag_push: &tag_push
+  - |
+    git config user.name "Release Bot"
+    git config user.email "release-bot@${CI_SERVER_HOST}"
+    git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    TAG_TITLE="VirtuMic ${COMPONENT^} ${NEXT_VERSION} | $(date +%Y-%m-%d)"
+    git tag -a "$TAG_NAME" -m "$TAG_TITLE"
+    git push origin "$TAG_NAME"
+
+    LINKS_JSON="[]"
+    if [ -f "dist/asset_links.json" ]; then
+      LINKS_JSON=$(cat dist/asset_links.json)
+    fi
+
+    PAYLOAD=$(jq -n \
+      --arg name "$TAG_TITLE" \
+      --arg tag_name "$TAG_NAME" \
+      --arg description "$DESCRIPTION" \
+      --argjson links "$LINKS_JSON" \
+      '{name: $name, tag_name: $tag_name, description: $description, assets: {links: $links}}')
+
+    curl --fail-with-body --silent --show-error \
+      --request POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+      --header "Content-Type: application/json" \
+      --data "$PAYLOAD"
+
+.preview_component_base:
+  extends: .component_base
+  cache: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "$PACKAGE_PATH/**/*"
+      when: manual
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - |
+      if [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ]; then
+        git config user.name "Release Bot"
+        git config user.email "release-bot@gitlab.com"
+        FEATURE_COMMIT=$(git rev-parse HEAD)
+        git fetch origin "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+        git reset --hard "origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+        git merge --allow-unrelated-histories --squash "$FEATURE_COMMIT"
+        git commit -m "$CI_MERGE_REQUEST_TITLE"
+      fi
+    - *cliff_resolve
+    - 'echo "Preview: Next tag for virtumic-$COMPONENT is $TAG_NAME (version $NEXT_VERSION)"'
+    - echo "--- Changelog Preview ---"
+    - printf '%s\n' "$DESCRIPTION"
+
+.release_component_base:
+  extends: .component_base
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      allow_failure: false
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - *cliff_resolve
+    - echo "Releasing $TAG_NAME..."
+
+.release_maven_base:
+  extends: .release_component_base
+  resource_group: "release-$COMPONENT"
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - *cliff_resolve
+    - echo "Releasing $TAG_NAME..."
+
+    # Build Bazel Maven distribution zip
+    - export VERSION="$NEXT_VERSION"
+    - bazel build --config=ci "//virtumic-${COMPONENT}:dist_maven"
+
+    # Unpack isolated staging deploy for JReleaser (collision-proof)
+    - export JRELEASER_STAGING_REPOSITORY="build/staging-deploy-${COMPONENT}"
+    - rm -rf "${JRELEASER_STAGING_REPOSITORY}" && mkdir -p "${JRELEASER_STAGING_REPOSITORY}"
+    - unzip -q -o "bazel-bin/virtumic-${COMPONENT}/dist_maven.zip" -d "${JRELEASER_STAGING_REPOSITORY}"
+
+    # Publish internally to GitLab Package Registry
+    - export MAVEN_REPO="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
+    - export MAVEN_USER="gitlab-ci-token"
+    - export MAVEN_PASSWORD="${CI_JOB_TOKEN}"
+    - bazel run --config=ci "//virtumic-${COMPONENT}:publish"
+
+    # Deploy to Maven Central via JReleaser
+    - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
+    - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
+    - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
+    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
+    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
+    - |
+      if [ -n "${GPG_PUBLIC_KEY:-}" ]; then
+        export JRELEASER_GPG_PUBLIC_KEY=$(echo "$GPG_PUBLIC_KEY" | base64 -d)
+      fi
+      if [ -n "${GPG_SECRET_KEY:-}" ]; then
+        export JRELEASER_GPG_SECRET_KEY=$(echo "$GPG_SECRET_KEY" | base64 -d)
+      fi
+    - export JRELEASER_GPG_PASSPHRASE="$GPG_PASSPHRASE"
+    - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
+    - jreleaser deploy --config-file ci/jreleaser.yml
+
+    - *tag_push
+
+release:app:
+  extends: .component_base
+  stage: release
+  image: $CI_BASE_IMAGE
+  resource_group: "release-app"
+  variables:
+    COMPONENT: "app"
+  id_tokens:
+    SIGSTORE_ID_TOKEN:
+      aud: "sigstore"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  needs:
+    - job: build:app
+      artifacts: true
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - *cliff_resolve
+    - |
+      echo "Releasing $TAG_NAME..."
+      [ -n "$ANDROID_KEYSTORE_BASE64" ] || { echo "ERROR: ANDROID_KEYSTORE_BASE64 variable is missing!"; exit 1; }
+
+      APKS="dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk dist/virtumic-privilege-extension.zip"
+      for FILE in $APKS; do
+        [ -f "$FILE" ] || { echo "Required asset not found: $FILE"; exit 1; }
+      done
+
+      echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/release.keystore
+      chmod 600 /tmp/release.keystore
+
+      APKSIGNER=$(command -v apksigner 2>/dev/null || find "$ANDROID_HOME/build-tools" -name apksigner 2>/dev/null | sort -V | tail -n 1)
+      [ -n "$APKSIGNER" ] || { echo "ERROR: apksigner not found!"; exit 1; }
+
+      for APK in dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk; do
+        echo "Signing $APK..."
+        "$APKSIGNER" sign \
+          --ks /tmp/release.keystore \
+          --ks-pass pass:"$ANDROID_KEYSTORE_PASSWORD" \
+          --ks-key-alias "$ANDROID_KEY_ALIAS" \
+          --key-pass pass:"$ANDROID_KEY_PASSWORD" \
+          "$APK"
+        "$APKSIGNER" verify --verbose --print-certs "$APK"
+      done
+
+      (cd dist && sha256sum virtumic-full.apk virtumic-arm64.apk virtumic-x86_64.apk virtumic-privilege-extension.zip) > dist/checksums.txt
+
+      if [ -n "${GPG_SECRET_KEY:-}" ]; then
+        export GNUPGHOME="/tmp/gnupg-release"
+        mkdir -p -m 700 "$GNUPGHOME"
+        echo "$GPG_SECRET_KEY" | base64 -d | gpg --batch --import
+        GPG_PASS_DECODED=$(echo "$GPG_PASSPHRASE" | base64 -d)
+        gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASS_DECODED" --armor --detach-sign dist/checksums.txt
+      fi
+
+      echo "Signing checksums.txt with keyless Cosign (Sigstore OIDC)..."
+      COSIGN_YES=true cosign sign-blob \
+        --yes \
+        --bundle dist/checksums.txt.bundle \
+        dist/checksums.txt
+
+      PKG_BASE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/${NEXT_VERSION}"
+      LATEST_PKG_BASE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/latest"
+      ASSET_LINKS_JSON="[]"
+
+      CLEAN_VER=$(echo "$NEXT_VERSION" | sed 's/^v//' | cut -d- -f1)
+      VERSION_CODE=$(cat dist/version_code.txt)
+      [ -n "$VERSION_CODE" ] || { echo "ERROR: version_code.txt is missing or empty!"; exit 1; }
+
+      jq -n \
+        --arg version "v${CLEAN_VER}" \
+        --argjson versionCode "${VERSION_CODE}" \
+        --arg zipUrl "${PKG_BASE_URL}/virtumic-privilege-extension.zip" \
+        --arg changelog "https://gitlab.com/IndiDevs/VirtuMic/-/releases/${TAG_NAME}" \
+        '{version: $version, versionCode: $versionCode, zipUrl: $zipUrl, changelog: $changelog}' > dist/module_update.json
+
+      for APK in $APKS; do
+        BASENAME=$(basename "$APK")
+        PKG_URL="${PKG_BASE_URL}/${BASENAME}"
+
+        curl --fail --silent --show-error --retry 3 --retry-all-errors \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          --upload-file "$APK" \
+          "$PKG_URL"
+
+        LINK_OBJ=$(jq -n --arg name "$BASENAME" --arg url "$PKG_URL" --arg link_type "package" '{name: $name, url: $url, link_type: $link_type}')
+        ASSET_LINKS_JSON=$(echo "$ASSET_LINKS_JSON" | jq --argjson link "$LINK_OBJ" '. + [$link]')
+      done
+
+      for EXTRA in checksums.txt checksums.txt.asc checksums.txt.bundle module_update.json; do
+        if [ -f "dist/$EXTRA" ]; then
+          EXTRA_URL="${PKG_BASE_URL}/${EXTRA}"
+          curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+            --upload-file "dist/$EXTRA" \
+            "$EXTRA_URL"
+
+          LINK_OBJ=$(jq -n --arg name "$EXTRA" --arg url "$EXTRA_URL" --arg link_type "other" '{name: $name, url: $url, link_type: $link_type}')
+          ASSET_LINKS_JSON=$(echo "$ASSET_LINKS_JSON" | jq --argjson link "$LINK_OBJ" '. + [$link]')
+        fi
+      done
+
+      # Upload module_update.json to /latest/ package endpoint (Zero bump commits)
+      curl --fail --silent --show-error --retry 3 --retry-all-errors \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --upload-file "dist/module_update.json" \
+        "${LATEST_PKG_BASE_URL}/module_update.json"
+
+      echo "$ASSET_LINKS_JSON" > dist/asset_links.json
+
+    - *tag_push
+  after_script:
+    - rm -rf /tmp/release.keystore /tmp/gnupg-release
+
+# --- PREVIEW JOBS ---
+
+preview:core:
+  extends: .preview_component_base
+  variables:
+    COMPONENT: "core"
+    PACKAGE_PATH: "virtumic-core"
+
+preview:service:
+  extends: .preview_component_base
+  variables:
+    COMPONENT: "service"
+    PACKAGE_PATH: "virtumic-service"
+
+preview:app:
+  extends: .preview_component_base
+  variables:
+    COMPONENT: "app"
+    PACKAGE_PATH: "virtumic-app"
+
+# --- RELEASE JOBS ---
+
+release:core:
+  extends: .release_maven_base
+  variables:
+    COMPONENT: "core"
+  needs:
+    - job: build_core_library
+      artifacts: true
+
+release:service:
+  extends: .release_maven_base
+  variables:
+    COMPONENT: "service"
+  needs:
+    - job: build_service_library
+      artifacts: true

@@ -1,0 +1,24 @@
+---
+
+code_lint:
+  stage: lint
+  image: $CI_BASE_IMAGE
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - bazel run --config=ci //:lint
+  rules:
+    - changes:
+        - src/**/*
+        - tools/lint/*
+        - "**/{BUILD,BUILD.bazel}"
+        - "**/MODULE.bazel"
+
+commit_lint:
+  stage: lint
+  image: node:alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    - npm install -g @commitlint/cli @commitlint/config-conventional
+  script:
+    - echo "${CI_MERGE_REQUEST_TITLE}" | commitlint --config ci/commitlint.config.js

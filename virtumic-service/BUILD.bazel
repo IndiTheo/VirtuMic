@@ -1,0 +1,152 @@
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("@rules_kotlin//kotlin:lint.bzl", "ktlint_test", "ktlint_fix")
+load("@rules_android//rules:rules.bzl", "android_library", "android_binary")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
+load("@rules_dokka//dokka:defs.bzl", "dokka", "dokka_config")
+load("//tools/bazel:android_test.bzl", "android_test_suite")
+
+exports_files(["src/main/AndroidManifest.xml"])
+
+load("@rules_kotlin//kotlin:core.bzl", "kt_compiler_plugin")
+
+kt_compiler_plugin(
+    name = "parcelize_plugin",
+    id = "org.jetbrains.kotlin.parcelize",
+    target_embedded_compiler = True,
+    visibility = ["//visibility:public"],
+    deps = ["@rules_kotlin//kotlin/compiler:parcelize-compiler-plugin"],
+)
+
+kt_android_library(
+    name = "virtumic-service",
+    srcs = glob([
+        "src/main/kotlin/**/*.kt",
+    ]),
+    plugins = [":parcelize_plugin"],
+    deps = [
+        "//virtumic-core:virtumic-core",
+        "//virtumic-media3:virtumic-media3",
+        "@rules_kotlin//kotlin/compiler:parcelize-runtime",
+        "@android//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@android//:org_jetbrains_kotlinx_kotlinx_coroutines_android",
+        "@android//:androidx_lifecycle_lifecycle_livedata_ktx",
+        "@android//:androidx_core_core_ktx",
+        "@android//:androidx_media3_media3_exoplayer",
+        "@android//:androidx_media3_media3_common",
+        "@android//:androidx_media3_media3_session",
+        "@android//:androidx_media3_media3_extractor",
+        "@android//:com_google_guava_guava",
+        "@android//:androidx_test_runner",
+        "@android//:androidx_test_monitor",
+        "@android//:androidx_test_core",
+    ],
+    exports_manifest = 1,
+    manifest = "src/main/AndroidManifest.xml",
+    custom_package = "com.indidevs.virtumic.service",
+    visibility = ["//visibility:public"],
+)
+
+dokka_config(
+    name = "docs_config",
+    skip_empty_packages = True,
+)
+
+# API Documentation
+dokka(
+    name = "docs_dir",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    deps = [
+        ":virtumic-service",
+    ],
+    config = ":docs_config",
+    format = "html",
+    module_name = "virtumic-service",
+)
+
+pkg_zip(
+    name = "docs",
+    srcs = [":docs_dir"],
+    out = "virtumic-service-docs.zip",
+)
+
+android_test_suite(
+    name = "virtumic_service_tests",
+    srcs = glob(["src/test/kotlin/**/*Test.kt"]),
+    custom_package = "com.indidevs.virtumic.service.test",
+    manifest = "src/main/AndroidManifest.xml",
+    associates = [":virtumic-service"],
+    tags = ["unit", "robolectric"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//virtumic-core:virtumic-core",
+        "@android//:junit_junit",
+        "@android//:org_robolectric_robolectric",
+        "@android//:androidx_test_core",
+        "@android//:androidx_test_runner",
+        "@android//:androidx_test_ext_junit",
+        "@android//:androidx_media3_media3_common",
+    ],
+)
+
+# Staging mapping for the AAR (reused by future Maven-structured staging targets)
+pkg_files(
+    name = "dist_flat_files",
+    srcs = [
+        ":virtumic-service.aar",
+    ],
+    prefix = "virtumic-service",
+)
+
+# Human-readable distribution for quick CI artifact access
+pkg_zip(
+    name = "dist_flat",
+    srcs = [":dist_flat_files"],
+)
+
+
+load("@rules_jvm_external//:defs.bzl", "java_export")
+load("@rules_jvm_external//private/rules:maven_publish.bzl", "maven_publish")
+load("@version//:version.bzl", "VERSION")
+
+
+# Metadata generator producing the .pom file with transitive dependencies
+java_export(
+    name = "virtumic-service-maven",
+    maven_coordinates = "com.indidevs.android.virtumic:virtumic-service:%s" % VERSION,
+    exports = [":virtumic-service"],
+    pom_template = "//virtumic-service:pom.tmpl",
+)
+
+# Publication tool for uploading AAR and POM to Maven repositories
+# Usage: bazel run --config=ci //virtumic-service:publish
+maven_publish(
+    name = "publish",
+    coordinates = "com.indidevs.android.virtumic:virtumic-service:%s" % VERSION,
+    artifact = ":virtumic-service.aar",
+    pom = ":virtumic-service-maven-pom",
+)
+
+# Internal rule to organize files into Maven repository directory structure
+pkg_files(
+    name = "staging_files",
+    srcs = [
+        ":virtumic-service.aar",
+        ":virtumic-service-maven-pom",
+        ":virtumic-service-maven-maven-source",
+        ":virtumic-service-maven-docs",
+    ],
+    prefix = "com/indidevs/android/virtumic/virtumic-service/%s" % VERSION,
+    renames = {
+        ":virtumic-service.aar": "virtumic-service-%s.aar" % VERSION,
+        ":virtumic-service-maven-pom": "virtumic-service-%s.pom" % VERSION,
+        ":virtumic-service-maven-maven-source": "virtumic-service-%s-sources.jar" % VERSION,
+        ":virtumic-service-maven-docs": "virtumic-service-%s-javadoc.jar" % VERSION,
+    },
+)
+
+# Maven-structured distribution for official releases (used by JReleaser)
+pkg_zip(
+    name = "dist_maven",
+    srcs = [":staging_files"],
+)

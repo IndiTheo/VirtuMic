@@ -1,0 +1,18 @@
+---
+
+build_ci_base_image:
+  stage: infra
+  image: quay.io/buildah/stable:v1.35.4
+  variables:
+    STORAGE_DRIVER: vfs
+    BUILDAH_ISOLATION: chroot
+  cache: []
+  rules:
+    - changes:
+        - ci/Containerfile
+        - ci/.containerignore
+        - ci/mise.toml
+  script:
+    - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - buildah build --ignorefile ci/.containerignore -t $CI_BASE_IMAGE -f ci/Containerfile .
+    - buildah push $CI_BASE_IMAGE

@@ -1,0 +1,15 @@
+load(":sdk_proxy.bzl", "sdk_proxy")
+
+package(default_visibility = ["//visibility:public"])
+
+sdk_proxy(
+    name = "full_aosp_sdk",
+    base_sdk = "@androidsdk//:sdk", # Inherit official auto-discovery
+    custom_jar = "@framework//:indi_android_aosp_framework_library",
+)
+
+toolchain(
+    name = "full_aosp_sdk_toolchain",
+    toolchain = ":full_aosp_sdk",
+    toolchain_type = "@rules_android//toolchains/android_sdk:toolchain_type",
+)
