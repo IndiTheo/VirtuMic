@@ -14,7 +14,7 @@ project:
     documentation: "https://gitlab.com/IndiDevs/VirtuMic"
   languages:
     java:
-      groupId: com.indidevs.virtumic
+      groupId: com.indidevs.android.virtumic
 
 signing:
   active: ALWAYS
