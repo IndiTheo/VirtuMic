@@ -1,0 +1,5 @@
+[tools]
+git-cliff = "latest"
+cosign = "latest"
+gh = "latest"
+jreleaser = "1.26.0"

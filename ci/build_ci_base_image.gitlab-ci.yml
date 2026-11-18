@@ -11,8 +11,25 @@ build_ci_base_image:
     - changes:
         - ci/Containerfile
         - ci/.containerignore
-        - ci/mise.toml
+        - ci/build-mise.toml
   script:
     - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - buildah build --ignorefile ci/.containerignore -t $CI_BASE_IMAGE -f ci/Containerfile .
     - buildah push $CI_BASE_IMAGE
+
+build_ci_release_image:
+  stage: infra
+  image: quay.io/buildah/stable:v1.35.4
+  variables:
+    STORAGE_DRIVER: vfs
+    BUILDAH_ISOLATION: chroot
+  cache: []
+  rules:
+    - changes:
+        - ci/Release.Containerfile
+        - ci/release-mise.toml
+        - ci/.containerignore
+  script:
+    - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - buildah build --ignorefile ci/.containerignore -t $CI_RELEASE_IMAGE -f ci/Release.Containerfile .
+    - buildah push $CI_RELEASE_IMAGE

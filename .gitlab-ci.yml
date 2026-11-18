@@ -7,7 +7,7 @@ include:
 
 variables:
   CI_BASE_IMAGE: "$CI_REGISTRY_IMAGE:latest"
-  MISE_CONFIG_FILE: "ci/mise.toml"
+  CI_RELEASE_IMAGE: "$CI_REGISTRY_IMAGE/release:latest"
 
 default:
   interruptible: true
@@ -40,10 +40,15 @@ stages:
 
 # --- BUILD ---
 
-# Build core library
-build_core_library:
+.build_base:
   stage: build
   image: $CI_BASE_IMAGE
+  variables:
+    MISE_CONFIG_FILE: "ci/build-mise.toml"
+
+# Build core library
+build_core_library:
+  extends: .build_base
   script:
     - eval "$(mise activate bash --quiet)"
     - bazel build --config=ci //virtumic-core:dist_flat
@@ -63,8 +68,7 @@ build_core_library:
 
 # Build service library
 build_service_library:
-  stage: build
-  image: $CI_BASE_IMAGE
+  extends: .build_base
   script:
     - eval "$(mise activate bash --quiet)"
     - bazel build --config=ci //virtumic-service:virtumic-service
@@ -83,8 +87,7 @@ build_service_library:
 
 # Build app
 build:app:
-  stage: build
-  image: $CI_BASE_IMAGE
+  extends: .build_base
   artifacts:
     paths:
       - dist/virtumic-full.apk
@@ -120,8 +123,8 @@ build:app:
 # --- DOCS ---
 #
 build_docs:
+  extends: .build_base
   stage: docs
-  image: $CI_BASE_IMAGE
   before_script:
     - eval "$(mise activate bash --quiet)"
   script:
@@ -145,8 +148,8 @@ build_docs:
 
 # Publish core library internally
 publish_core_internal:
+  extends: .build_base
   stage: publish
-  image: $CI_BASE_IMAGE
   variables:
     MAVEN_REPO: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
     MAVEN_USER: "gitlab-ci-token"
@@ -160,8 +163,8 @@ publish_core_internal:
 
 # Publish service library internally
 publish_service_internal:
+  extends: .build_base
   stage: publish
-  image: $CI_BASE_IMAGE
   variables:
     MAVEN_REPO: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
     MAVEN_USER: "gitlab-ci-token"
@@ -177,10 +180,11 @@ publish_service_internal:
 
 .component_base:
   stage: release
-  image: $CI_BASE_IMAGE
+  image: $CI_RELEASE_IMAGE
   variables:
     GIT_DEPTH: 0
     GIT_STRATEGY: clone
+    MISE_CONFIG_FILE: "ci/release-mise.toml"
 
 .cliff_resolve: &cliff_resolve
   - |

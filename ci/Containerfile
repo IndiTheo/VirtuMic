@@ -18,7 +18,7 @@ RUN curl https://mise.run | sh
 ENV PATH="/root/.local/bin:$PATH"
 
 # Setup mise tools using the CI configuration
-COPY ci/mise.toml .mise.toml
+COPY ci/build-mise.toml .mise.toml
 RUN mise trust .mise.toml && \
     mise install && \
     # First update cmdline-tools to ensure sdkmanager can find modern packages like android-37.0

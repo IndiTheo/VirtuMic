@@ -6,9 +6,6 @@ java = "17"
 android-sdk = "latest"
 bazelisk = "latest"
 node = "24"
-jreleaser = "1.26.0"
-git-cliff = "latest"
-cosign = "latest"
 
 [env]
 NDK_VERSION = "{{ vars.ndk_v }}"
