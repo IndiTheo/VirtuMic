@@ -1,5 +1,11 @@
 ---
 
+.lint_changes: &lint_changes
+  - src/**/*
+  - tools/lint/*
+  - "**/{BUILD,BUILD.bazel}"
+  - "**/MODULE.bazel"
+
 code_lint:
   stage: lint
   image: $CI_BASE_IMAGE
@@ -7,11 +13,10 @@ code_lint:
     - eval "$(mise activate bash --quiet)"
     - bazel run --config=ci //:lint
   rules:
-    - changes:
-        - src/**/*
-        - tools/lint/*
-        - "**/{BUILD,BUILD.bazel}"
-        - "**/MODULE.bazel"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: *lint_changes
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *lint_changes
 
 commit_lint:
   stage: lint

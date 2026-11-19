@@ -41,6 +41,26 @@ stages:
 
 # --- BASE TEMPLATES & ANCHORS ---
 
+.core_changes: &core_changes
+  - virtumic-core/**/*
+  - "**/{BUILD,BUILD.bazel}"
+  - "**/MODULE.bazel"
+
+.service_changes: &service_changes
+  - virtumic-service/**/*
+  - virtumic-core/**/*  # Service depends on core
+  - "**/{BUILD,BUILD.bazel}"
+  - "**/MODULE.bazel"
+
+.app_changes: &app_changes
+  - virtumic-app/**/*
+  - virtumic-service/**/*
+  - virtumic-core/**/*
+  - lib/privilege-hub/**/*
+  - systemless-overlay-module/**/*
+  - "**/{BUILD,BUILD.bazel}"
+  - "**/MODULE.bazel"
+
 .build_base:
   stage: build
   image: $CI_BASE_IMAGE
@@ -114,11 +134,9 @@ build_core_library:
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: *core_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - changes:
-        - virtumic-core/**/*
-        - "**/{BUILD,BUILD.bazel}"
-        - "**/MODULE.bazel"
+      changes: *core_changes
 
 # Build service library
 build_service_library:
@@ -134,12 +152,9 @@ build_service_library:
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: *service_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - changes:
-        - virtumic-service/**/*
-        - virtumic-core/**/*  # Service depends on core
-        - "**/{BUILD,BUILD.bazel}"
-        - "**/MODULE.bazel"
+      changes: *service_changes
 
 # Build app
 build:app:
@@ -166,15 +181,9 @@ build:app:
     - cp bazel-bin/virtumic-app/virtumic.apk dist/virtumic-x86_64.apk
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: *app_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - changes:
-        - virtumic-app/**/*
-        - virtumic-service/**/*
-        - virtumic-core/**/*
-        - lib/privilege-hub/**/*
-        - systemless-overlay-module/**/*
-        - "**/{BUILD,BUILD.bazel}"
-        - "**/MODULE.bazel"
+      changes: *app_changes
 
 
 sign:app:
@@ -185,6 +194,11 @@ sign:app:
   id_tokens:
     SIGSTORE_ID_TOKEN:
       aud: "sigstore"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: *app_changes
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *app_changes
   needs:
     - job: build:app
       artifacts: true
@@ -286,7 +300,10 @@ publish_core_internal:
     MAVEN_USER: "gitlab-ci-token"
     MAVEN_PASSWORD: "${CI_JOB_TOKEN}"
   rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: *core_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *core_changes
   script:
     - eval "$(mise activate bash --quiet)"
     - bazel run --config=ci //virtumic-core:publish
@@ -301,7 +318,10 @@ publish_service_internal:
     MAVEN_USER: "gitlab-ci-token"
     MAVEN_PASSWORD: "${CI_JOB_TOKEN}"
   rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: *service_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *service_changes
   script:
     - eval "$(mise activate bash --quiet)"
     - bazel run --config=ci //virtumic-service:publish
