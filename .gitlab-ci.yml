@@ -34,17 +34,71 @@ stages:
   - infra
   - lint
   - build
+  - prepare
   - docs
   - publish
   - release
 
-# --- BUILD ---
+# --- BASE TEMPLATES & ANCHORS ---
 
 .build_base:
   stage: build
   image: $CI_BASE_IMAGE
   variables:
     MISE_CONFIG_FILE: "ci/build-mise.toml"
+
+.release_base:
+  stage: release
+  image: $CI_RELEASE_IMAGE
+  variables:
+    GIT_DEPTH: 0
+    GIT_STRATEGY: clone
+    MISE_CONFIG_FILE: "ci/release-mise.toml"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      allow_failure: false
+
+.cliff_resolve: &cliff_resolve
+  - |
+    CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMPONENT}/**" --tag-pattern "${COMPONENT}-v[0-9]*")
+    if [ -z "$(git tag -l "${COMPONENT}-v*")" ]; then
+      TAG_NAME="${COMPONENT}-v0.1.0"
+      [ -n "${PRE_RELEASE:-}" ] && TAG_NAME="${TAG_NAME}-${PRE_RELEASE}.0"
+    else
+      TAG_NAME=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version --bump "${PRE_RELEASE:-auto}")
+    fi
+    DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME")
+    [ -z "$DESCRIPTION" ] && echo "No releasable changes for $COMPONENT." && exit 0
+    NEXT_VERSION="${TAG_NAME#"${COMPONENT}-v"}"
+    export TAG_NAME NEXT_VERSION DESCRIPTION
+
+.tag_push: &tag_push
+  - |
+    git config user.name "Release Bot"
+    git config user.email "release-bot@${CI_SERVER_HOST}"
+    git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    TAG_TITLE="VirtuMic ${COMPONENT^} ${NEXT_VERSION} | $(date +%Y-%m-%d)"
+    git tag -a "$TAG_NAME" -m "$TAG_TITLE"
+    git push origin "$TAG_NAME"
+
+    LINKS_JSON="[]"
+    if [ -f "dist/asset_links.json" ]; then
+      LINKS_JSON=$(cat dist/asset_links.json)
+    fi
+
+    PAYLOAD=$(jq -n \
+      --arg name "$TAG_TITLE" \
+      --arg tag_name "$TAG_NAME" \
+      --arg description "$DESCRIPTION" \
+      --argjson links "$LINKS_JSON" \
+      '{name: $name, tag_name: $tag_name, description: $description, assets: {links: $links}}')
+
+    curl --fail-with-body --silent --show-error \
+      --request POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+      --header "Content-Type: application/json" \
+      --data "$PAYLOAD"
 
 # Build core library
 build_core_library:
@@ -71,10 +125,12 @@ build_service_library:
   extends: .build_base
   script:
     - eval "$(mise activate bash --quiet)"
-    - bazel build --config=ci //virtumic-service:virtumic-service
+    - bazel build --config=ci //virtumic-service:dist_flat
+    - mkdir -p build/outputs
+    - unzip bazel-bin/virtumic-service/dist_flat.zip -d build/outputs
   artifacts:
     paths:
-      - bazel-bin/virtumic-service/virtumic-service.aar
+      - build/outputs/
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -119,6 +175,81 @@ build:app:
         - systemless-overlay-module/**/*
         - "**/{BUILD,BUILD.bazel}"
         - "**/MODULE.bazel"
+
+
+sign:app:
+  extends: .release_base
+  stage: prepare
+  variables:
+    COMPONENT: "app"
+  id_tokens:
+    SIGSTORE_ID_TOKEN:
+      aud: "sigstore"
+  needs:
+    - job: build:app
+      artifacts: true
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - *cliff_resolve
+    - |
+      echo "Signing release assets for $TAG_NAME..."
+      [ -n "$ANDROID_KEYSTORE_BASE64" ] || { echo "ERROR: ANDROID_KEYSTORE_BASE64 variable is missing!"; exit 1; }
+
+      APKS="dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk dist/virtumic-privilege-extension.zip"
+      for FILE in $APKS; do
+        [ -f "$FILE" ] || { echo "Required asset not found: $FILE"; exit 1; }
+      done
+
+      echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/release.keystore
+      chmod 600 /tmp/release.keystore
+
+      APKSIGNER=$(command -v apksigner 2>/dev/null || find "$ANDROID_HOME/build-tools" -name apksigner 2>/dev/null | sort -V | tail -n 1)
+      [ -n "$APKSIGNER" ] || { echo "ERROR: apksigner not found!"; exit 1; }
+
+      for APK in dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk; do
+        echo "Signing $APK..."
+        "$APKSIGNER" sign \
+          --ks /tmp/release.keystore \
+          --ks-pass pass:"$ANDROID_KEYSTORE_PASSWORD" \
+          --ks-key-alias "$ANDROID_KEY_ALIAS" \
+          --key-pass pass:"$ANDROID_KEY_PASSWORD" \
+          "$APK"
+        "$APKSIGNER" verify --verbose --print-certs "$APK"
+      done
+
+      (cd dist && sha256sum virtumic-full.apk virtumic-arm64.apk virtumic-x86_64.apk virtumic-privilege-extension.zip) > dist/checksums.txt
+
+      if [ -n "${GPG_SECRET_KEY:-}" ]; then
+        export GNUPGHOME="/tmp/gnupg-release"
+        mkdir -p -m 700 "$GNUPGHOME"
+        echo "$GPG_SECRET_KEY" | base64 -d | gpg --batch --import
+        GPG_PASS_DECODED=$(echo "$GPG_PASSPHRASE" | base64 -d)
+        gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASS_DECODED" --armor --detach-sign dist/checksums.txt
+      fi
+
+      echo "Signing checksums.txt with keyless Cosign (Sigstore OIDC)..."
+      COSIGN_YES=true cosign sign-blob \
+        --yes \
+        --bundle dist/checksums.txt.bundle \
+        dist/checksums.txt
+
+      PKG_BASE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/${NEXT_VERSION}"
+      CLEAN_VER=$(echo "$NEXT_VERSION" | sed 's/^v//' | cut -d- -f1)
+      VERSION_CODE=$(cat dist/version_code.txt)
+      [ -n "$VERSION_CODE" ] || { echo "ERROR: version_code.txt is missing or empty!"; exit 1; }
+
+      jq -n \
+        --arg version "v${CLEAN_VER}" \
+        --argjson versionCode "${VERSION_CODE}" \
+        --arg zipUrl "${PKG_BASE_URL}/virtumic-privilege-extension.zip" \
+        --arg changelog "https://gitlab.com/IndiDevs/VirtuMic/-/releases/${TAG_NAME}" \
+        '{version: $version, versionCode: $versionCode, zipUrl: $zipUrl, changelog: $changelog}' > dist/module_update.json
+  after_script:
+    - rm -rf /tmp/release.keystore /tmp/gnupg-release
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
 
 # --- DOCS ---
 #
@@ -176,59 +307,10 @@ publish_service_internal:
     - bazel run --config=ci //virtumic-service:publish
   needs: [ "build_service_library" ]
 
-# --- RELEASE & PREVIEW ARCHITECTURE  ---
-
-.component_base:
-  stage: release
-  image: $CI_RELEASE_IMAGE
-  variables:
-    GIT_DEPTH: 0
-    GIT_STRATEGY: clone
-    MISE_CONFIG_FILE: "ci/release-mise.toml"
-
-.cliff_resolve: &cliff_resolve
-  - |
-    CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMPONENT}/**" --tag-pattern "${COMPONENT}-v[0-9]*")
-    if [ -z "$(git tag -l "${COMPONENT}-v*")" ]; then
-      TAG_NAME="${COMPONENT}-v0.1.0"
-      [ -n "${PRE_RELEASE:-}" ] && TAG_NAME="${TAG_NAME}-${PRE_RELEASE}.0"
-    else
-      TAG_NAME=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version --bump "${PRE_RELEASE:-auto}")
-    fi
-    DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME")
-    [ -z "$DESCRIPTION" ] && echo "No releasable changes for $COMPONENT." && exit 0
-    NEXT_VERSION="${TAG_NAME#"${COMPONENT}-v"}"
-    export TAG_NAME NEXT_VERSION DESCRIPTION
-
-.tag_push: &tag_push
-  - |
-    git config user.name "Release Bot"
-    git config user.email "release-bot@${CI_SERVER_HOST}"
-    git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-    TAG_TITLE="VirtuMic ${COMPONENT^} ${NEXT_VERSION} | $(date +%Y-%m-%d)"
-    git tag -a "$TAG_NAME" -m "$TAG_TITLE"
-    git push origin "$TAG_NAME"
-
-    LINKS_JSON="[]"
-    if [ -f "dist/asset_links.json" ]; then
-      LINKS_JSON=$(cat dist/asset_links.json)
-    fi
-
-    PAYLOAD=$(jq -n \
-      --arg name "$TAG_TITLE" \
-      --arg tag_name "$TAG_NAME" \
-      --arg description "$DESCRIPTION" \
-      --argjson links "$LINKS_JSON" \
-      '{name: $name, tag_name: $tag_name, description: $description, assets: {links: $links}}')
-
-    curl --fail-with-body --silent --show-error \
-      --request POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
-      --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
-      --header "Content-Type: application/json" \
-      --data "$PAYLOAD"
+# --- RELEASE JOBS ---
 
 .preview_component_base:
-  extends: .component_base
+  extends: .release_base
   cache: []
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -255,11 +337,7 @@ publish_service_internal:
     - printf '%s\n' "$DESCRIPTION"
 
 .release_component_base:
-  extends: .component_base
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-      allow_failure: false
+  extends: .release_base
   script:
     - eval "$(mise activate bash --quiet)"
     - *cliff_resolve
@@ -308,80 +386,24 @@ publish_service_internal:
     - *tag_push
 
 release:app:
-  extends: .component_base
-  stage: release
-  image: $CI_BASE_IMAGE
+  extends: .release_base
   resource_group: "release-app"
   variables:
     COMPONENT: "app"
-  id_tokens:
-    SIGSTORE_ID_TOKEN:
-      aud: "sigstore"
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
   needs:
-    - job: build:app
+    - job: sign:app
       artifacts: true
   script:
     - eval "$(mise activate bash --quiet)"
     - *cliff_resolve
     - |
-      echo "Releasing $TAG_NAME..."
-      [ -n "$ANDROID_KEYSTORE_BASE64" ] || { echo "ERROR: ANDROID_KEYSTORE_BASE64 variable is missing!"; exit 1; }
-
-      APKS="dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk dist/virtumic-privilege-extension.zip"
-      for FILE in $APKS; do
-        [ -f "$FILE" ] || { echo "Required asset not found: $FILE"; exit 1; }
-      done
-
-      echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/release.keystore
-      chmod 600 /tmp/release.keystore
-
-      APKSIGNER=$(command -v apksigner 2>/dev/null || find "$ANDROID_HOME/build-tools" -name apksigner 2>/dev/null | sort -V | tail -n 1)
-      [ -n "$APKSIGNER" ] || { echo "ERROR: apksigner not found!"; exit 1; }
-
-      for APK in dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk; do
-        echo "Signing $APK..."
-        "$APKSIGNER" sign \
-          --ks /tmp/release.keystore \
-          --ks-pass pass:"$ANDROID_KEYSTORE_PASSWORD" \
-          --ks-key-alias "$ANDROID_KEY_ALIAS" \
-          --key-pass pass:"$ANDROID_KEY_PASSWORD" \
-          "$APK"
-        "$APKSIGNER" verify --verbose --print-certs "$APK"
-      done
-
-      (cd dist && sha256sum virtumic-full.apk virtumic-arm64.apk virtumic-x86_64.apk virtumic-privilege-extension.zip) > dist/checksums.txt
-
-      if [ -n "${GPG_SECRET_KEY:-}" ]; then
-        export GNUPGHOME="/tmp/gnupg-release"
-        mkdir -p -m 700 "$GNUPGHOME"
-        echo "$GPG_SECRET_KEY" | base64 -d | gpg --batch --import
-        GPG_PASS_DECODED=$(echo "$GPG_PASSPHRASE" | base64 -d)
-        gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASS_DECODED" --armor --detach-sign dist/checksums.txt
-      fi
-
-      echo "Signing checksums.txt with keyless Cosign (Sigstore OIDC)..."
-      COSIGN_YES=true cosign sign-blob \
-        --yes \
-        --bundle dist/checksums.txt.bundle \
-        dist/checksums.txt
+      echo "Releasing $TAG_NAME to GitLab Package Registry & Release..."
 
       PKG_BASE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/${NEXT_VERSION}"
       LATEST_PKG_BASE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/latest"
       ASSET_LINKS_JSON="[]"
 
-      CLEAN_VER=$(echo "$NEXT_VERSION" | sed 's/^v//' | cut -d- -f1)
-      VERSION_CODE=$(cat dist/version_code.txt)
-      [ -n "$VERSION_CODE" ] || { echo "ERROR: version_code.txt is missing or empty!"; exit 1; }
-
-      jq -n \
-        --arg version "v${CLEAN_VER}" \
-        --argjson versionCode "${VERSION_CODE}" \
-        --arg zipUrl "${PKG_BASE_URL}/virtumic-privilege-extension.zip" \
-        --arg changelog "https://gitlab.com/IndiDevs/VirtuMic/-/releases/${TAG_NAME}" \
-        '{version: $version, versionCode: $versionCode, zipUrl: $zipUrl, changelog: $changelog}' > dist/module_update.json
+      APKS="dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk dist/virtumic-privilege-extension.zip"
 
       for APK in $APKS; do
         BASENAME=$(basename "$APK")
@@ -418,8 +440,6 @@ release:app:
       echo "$ASSET_LINKS_JSON" > dist/asset_links.json
 
     - *tag_push
-  after_script:
-    - rm -rf /tmp/release.keystore /tmp/gnupg-release
 
 # --- PREVIEW JOBS ---
 
@@ -453,6 +473,68 @@ release:core:
 
 release:service:
   extends: .release_maven_base
+  variables:
+    COMPONENT: "service"
+  needs:
+    - job: build_service_library
+      artifacts: true
+
+# --- GITHUB RELEASE PUBLISH JOBS ---
+
+.publish_github_base:
+  extends: .release_base
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - *cliff_resolve
+    - |
+      if [ -z "${GH_TOKEN:-}" ] || [ -z "${GITHUB_REPOSITORY:-}" ]; then
+        echo "ERROR: GH_TOKEN or GITHUB_REPOSITORY variable is missing!"
+        exit 1
+      fi
+
+      echo "Publishing Draft Release for $TAG_NAME to GitHub (${GITHUB_REPOSITORY})..."
+
+      mkdir -p dist
+
+      # Collect available dist assets to upload
+      FILES_TO_UPLOAD=""
+      ASSETS="dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk dist/virtumic-privilege-extension.zip dist/checksums.txt dist/checksums.txt.asc dist/checksums.txt.bundle dist/module_update.json"
+
+      for FILE in $ASSETS; do
+        if [ -f "$FILE" ]; then
+          FILES_TO_UPLOAD="$FILES_TO_UPLOAD $FILE"
+        fi
+      done
+
+      TAG_TITLE="VirtuMic ${COMPONENT^} ${NEXT_VERSION} | $(date +%Y-%m-%d)"
+
+      GH_TOKEN="${GH_TOKEN}" gh release create "$TAG_NAME" \
+        $FILES_TO_UPLOAD \
+        --draft \
+        --title "$TAG_TITLE" \
+        --notes "$DESCRIPTION" \
+        --repo "${GITHUB_REPOSITORY}"
+
+      echo "Successfully published draft release $TAG_NAME to GitHub (${GITHUB_REPOSITORY})!"
+
+publish:github:app:
+  extends: .publish_github_base
+  variables:
+    COMPONENT: "app"
+  needs:
+    - job: sign:app
+      artifacts: true
+
+publish:github:core:
+  extends: .publish_github_base
+  variables:
+    COMPONENT: "core"
+  needs:
+    - job: build_core_library
+      artifacts: true
+
+publish:github:service:
+  extends: .publish_github_base
   variables:
     COMPONENT: "service"
   needs:

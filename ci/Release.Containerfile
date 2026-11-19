@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     default-jre-headless \
     apksigner \
     gpg \
+    gpg-agent \
     git \
     curl \
     unzip \
