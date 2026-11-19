@@ -20,6 +20,8 @@ ignore_merge_commits = true
 filter_commits = true
 protect_breaking_commits = true
 commit_parsers = [
+    { message = "^ci-", skip = true },
+    { message = "^docs-", skip = true },
     { message = "^feat\\(security\\):", group = "Security" },
     { message = "^fix\\(security\\):", group = "Security" },
     { message = "^feat(\\(.*\\))?:.*deprecat", group = "Deprecated" },
