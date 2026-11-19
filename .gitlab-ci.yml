@@ -134,7 +134,6 @@ build_core_library:
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: *core_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *core_changes
 
@@ -152,7 +151,6 @@ build_service_library:
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: *service_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *service_changes
 
@@ -181,7 +179,6 @@ build:app:
     - cp bazel-bin/virtumic-app/virtumic.apk dist/virtumic-x86_64.apk
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: *app_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *app_changes
 
@@ -196,7 +193,6 @@ sign:app:
       aud: "sigstore"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: *app_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *app_changes
   needs:
@@ -301,13 +297,13 @@ publish_core_internal:
     MAVEN_PASSWORD: "${CI_JOB_TOKEN}"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: *core_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *core_changes
   script:
     - eval "$(mise activate bash --quiet)"
     - bazel run --config=ci //virtumic-core:publish
-  needs: [ "build_core_library" ]
+  needs:
+    - job: build_core_library
 
 # Publish service library internally
 publish_service_internal:
@@ -319,13 +315,13 @@ publish_service_internal:
     MAVEN_PASSWORD: "${CI_JOB_TOKEN}"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes: *service_changes
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *service_changes
   script:
     - eval "$(mise activate bash --quiet)"
     - bazel run --config=ci //virtumic-service:publish
-  needs: [ "build_service_library" ]
+  needs:
+    - job: build_service_library
 
 # --- RELEASE JOBS ---
 
