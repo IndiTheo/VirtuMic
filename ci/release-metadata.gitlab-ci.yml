@@ -6,7 +6,13 @@
         TAG_NAME="${COMPONENT}-v0.1.0"
         [ -n "${PRE_RELEASE:-}" ] && TAG_NAME="${TAG_NAME}-${PRE_RELEASE}.0"
       else
-        TAG_NAME=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version --bump "${PRE_RELEASE:-auto}")
+        BUMPED=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version)
+        if [ -n "${PRE_RELEASE:-}" ]; then
+          COUNT=$(git tag -l "${BUMPED}-${PRE_RELEASE}.*" | wc -l)
+          TAG_NAME="${BUMPED}-${PRE_RELEASE}.$((COUNT + 1))"
+        else
+          TAG_NAME="$BUMPED"
+        fi
       fi
       DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME")
       [ -z "$DESCRIPTION" ] && echo "No releasable changes for $COMPONENT." && exit 0
