@@ -380,6 +380,8 @@ preview:core:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *core_changes
       when: manual
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
 
@@ -391,6 +393,8 @@ preview:service:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *service_changes
       when: manual
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
 
@@ -401,6 +405,8 @@ preview:app:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *app_changes
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "web"
       when: manual
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
