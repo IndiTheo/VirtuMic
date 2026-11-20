@@ -245,6 +245,56 @@ publish_service_internal:
   needs:
     - job: build_service_library
 
+# --- PREPARE METADATA JOBS ---
+
+.prepare_metadata_base:
+  stage: prepare
+  image: $CI_RELEASE_IMAGE
+  variables:
+    GIT_DEPTH: 0
+    GIT_STRATEGY: clone
+    MISE_CONFIG_FILE: "ci/release-mise.toml"
+  artifacts:
+    name: "metadata-${COMPONENT}-${CI_COMMIT_REF_NAME}"
+    paths:
+      - dist/release_notes.md
+      - release.env
+    reports:
+      dotenv: release.env
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - !reference [.cliff_resolve, script]
+
+prepare_metadata:app:
+  extends: .prepare_metadata_base
+  variables:
+    COMPONENT: "app"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+
+prepare_metadata:core:
+  extends: .prepare_metadata_base
+  variables:
+    COMPONENT: "core"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+
+prepare_metadata:service:
+  extends: .prepare_metadata_base
+  variables:
+    COMPONENT: "service"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+
 # --- RELEASE JOBS ---
 
 .preview_component_base:
@@ -268,20 +318,14 @@ publish_service_internal:
     - 'echo "Preview: Next tag for virtumic-$COMPONENT is $TAG_NAME (version $NEXT_VERSION)"'
     - echo "--- Changelog Preview ---"
     - printf '%s\n' "$DESCRIPTION"
+    - echo "--- Changelog Preview End ---"
 
-.release_component_base:
-  extends: .release_base
-  script:
-    - eval "$(mise activate bash --quiet)"
-    - !reference [.cliff_resolve, script]
-    - echo "Releasing $TAG_NAME..."
 
 .release_maven_base:
-  extends: .release_component_base
+  extends: .release_base
   resource_group: "release-$COMPONENT"
   script:
     - eval "$(mise activate bash --quiet)"
-    - !reference [.cliff_resolve, script]
     - echo "Releasing $TAG_NAME..."
 
     # Build Bazel Maven distribution zip
@@ -324,11 +368,12 @@ release:app:
   variables:
     COMPONENT: "app"
   needs:
+    - job: prepare_metadata:app
+      artifacts: true
     - job: sign:app
       artifacts: true
   script:
     - eval "$(mise activate bash --quiet)"
-    - !reference [.cliff_resolve, script]
     - |
       echo "Releasing $TAG_NAME to GitLab Package Registry & Release..."
 
@@ -426,6 +471,8 @@ release:core:
   variables:
     COMPONENT: "core"
   needs:
+    - job: prepare_metadata:core
+      artifacts: true
     - job: build_core_library
       artifacts: true
 
@@ -434,12 +481,14 @@ release:service:
   variables:
     COMPONENT: "service"
   needs:
+    - job: prepare_metadata:service
+      artifacts: true
     - job: build_service_library
       artifacts: true
 
-# --- GITHUB RELEASE PUBLISH JOBS ---
+# --- GITHUB RELEASE JOBS ---
 
-.publish_github_base:
+.release_github_base:
   extends: .release_base
   script:
     - eval "$(mise activate bash --quiet)"
@@ -474,32 +523,32 @@ release:service:
 
       echo "Successfully published draft release $TAG_NAME to GitHub (${GITHUB_REPOSITORY})!"
 
-publish:github:app:
-  extends: .publish_github_base
+release:github:app:
+  extends: .release_github_base
   variables:
     COMPONENT: "app"
   needs:
-    - job: release:app
+    - job: prepare_metadata:app
       artifacts: true
     - job: sign:app
       artifacts: true
 
-publish:github:core:
-  extends: .publish_github_base
+release:github:core:
+  extends: .release_github_base
   variables:
     COMPONENT: "core"
   needs:
-    - job: release:core
+    - job: prepare_metadata:core
       artifacts: true
     - job: build_core_library
       artifacts: true
 
-publish:github:service:
-  extends: .publish_github_base
+release:github:service:
+  extends: .release_github_base
   variables:
     COMPONENT: "service"
   needs:
-    - job: release:service
+    - job: prepare_metadata:service
       artifacts: true
     - job: build_service_library
       artifacts: true
