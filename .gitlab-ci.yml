@@ -458,7 +458,7 @@ release:service:
 
       TAG_TITLE="VirtuMic ${COMPONENT^} ${NEXT_VERSION} | $(date +%Y-%m-%d)"
 
-      GH_TOKEN="${GH_TOKEN}" gh release create "$TAG_NAME" \
+      printf '%s\n' "$DESCRIPTION" | GH_TOKEN="${GH_TOKEN}" gh release create "$TAG_NAME" \
         $FILES_TO_UPLOAD \
         --draft \
         --title "$TAG_TITLE" \
