@@ -69,6 +69,7 @@ sign:app:
         dist/checksums.txt
 
       PKG_BASE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/${NEXT_VERSION}"
+      LATEST_PKG_BASE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/latest"
       CLEAN_VER=$(echo "$NEXT_VERSION" | sed 's/^v//' | cut -d- -f1)
       VERSION_CODE=$(cat dist/version_code.txt)
       [ -n "$VERSION_CODE" ] || { echo "ERROR: version_code.txt is missing or empty!"; exit 1; }
@@ -76,7 +77,7 @@ sign:app:
       jq -n \
         --arg version "v${CLEAN_VER}" \
         --argjson versionCode "${VERSION_CODE}" \
-        --arg zipUrl "${PKG_BASE_URL}/virtumic-privilege-extension.zip" \
+        --arg zipUrl "${LATEST_PKG_BASE_URL}/virtumic-privilege-extension.zip" \
         --arg changelog "https://gitlab.com/IndiDevs/VirtuMic/-/releases/${TAG_NAME}" \
         '{version: $version, versionCode: $versionCode, zipUrl: $zipUrl, changelog: $changelog}' > dist/module_update.json
   after_script:

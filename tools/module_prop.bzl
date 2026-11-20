@@ -13,12 +13,16 @@ def _module_prop_impl(ctx):
     version_code = compute_version_code(ctx.attr.version)
     formatted_version = ctx.attr.version if ctx.attr.version.startswith("v") else "v" + ctx.attr.version
 
+    update_url = ctx.var.get("UPDATE_JSON_URL", "")
+    update_json_line = "updateJson=" + update_url if update_url else ""
+
     ctx.actions.expand_template(
         template = ctx.file.template,
         output = ctx.outputs.out,
         substitutions = {
             "{VERSION}": formatted_version,
             "{VERSION_CODE}": str(version_code),
+            "{UPDATE_JSON_LINE}": update_json_line,
         },
     )
 

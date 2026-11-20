@@ -160,7 +160,8 @@ build:app:
     - eval "$(mise activate bash --quiet)"
     - mkdir -p dist
     - export VERSION="${CI_COMMIT_TAG#"app-v"}"
-    - bazel build --config=ci //:overlay //:generate_version_code
+    - UPDATE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/latest/module_update.json"
+    - bazel build --config=ci --define UPDATE_JSON_URL="$UPDATE_URL" //:overlay //:generate_version_code
     - cp bazel-bin/virtumic-privilege-extension.zip dist/virtumic-privilege-extension.zip
     - cp bazel-bin/version_code.txt dist/version_code.txt
     - bazel build --config=ci --android_platforms=//:arm64-v8a,//:x86_64 //virtumic-app:virtumic
@@ -355,11 +356,15 @@ release:app:
         fi
       done
 
-      # Upload module_update.json to /latest/ package endpoint (Zero bump commits)
-      curl --fail --silent --show-error --retry 3 --retry-all-errors \
-        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
-        --upload-file "dist/module_update.json" \
-        "${LATEST_PKG_BASE_URL}/module_update.json"
+      # Upload systemless assets to /latest/ package endpoint
+      for LATEST_ASSET in module_update.json virtumic-privilege-extension.zip; do
+        if [ -f "dist/$LATEST_ASSET" ]; then
+          curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+            --upload-file "dist/$LATEST_ASSET" \
+            "${LATEST_PKG_BASE_URL}/$LATEST_ASSET"
+        fi
+      done
 
       echo "$ASSET_LINKS_JSON" > dist/asset_links.json
 
