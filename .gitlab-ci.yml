@@ -36,9 +36,9 @@ stages:
   - infra
   - lint
   - build
-  - prepare
   - docs
-  - publish
+  - preview
+  - prepare
   - release
 
 # --- BASE TEMPLATES & ANCHORS ---
@@ -204,7 +204,7 @@ build_docs:
 # Publish core library internally
 publish_core_internal:
   extends: .build_base
-  stage: publish
+  stage: preview
   variables:
     MAVEN_REPO: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
     MAVEN_USER: "gitlab-ci-token"
@@ -222,7 +222,7 @@ publish_core_internal:
 # Publish service library internally
 publish_service_internal:
   extends: .build_base
-  stage: publish
+  stage: preview
   variables:
     MAVEN_REPO: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
     MAVEN_USER: "gitlab-ci-token"
@@ -241,6 +241,7 @@ publish_service_internal:
 
 .preview_component_base:
   extends: .release_base
+  stage: preview
   cache: []
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"

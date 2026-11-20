@@ -11,17 +11,6 @@ sign:app:
       aud: "sigstore"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - virtumic-app/**/*
-        - virtumic-service/**/*
-        - virtumic-core/**/*
-        - lib/privilege-hub/**/*
-        - systemless-overlay-module/**/*
-        - "**/{BUILD,BUILD.bazel}"
-        - "**/MODULE.bazel"
-        - "ci/**/*"
-        - ".gitlab-ci.yml"
   needs:
     - job: build:app
       artifacts: true
