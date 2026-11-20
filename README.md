@@ -94,12 +94,12 @@ Ensure the app comes from the official developer:
   *(Compare the output SHA-256 certificate digest printed by `apksigner` against the pinned fingerprint above).*
 
 ### Keyless Cosign Verification (Sigstore OIDC)
-Verify that `checksums.txt` was created by CI on this repository:
+Verify that `checksums.txt` was created by CI on the official repository (`main` branch):
 ```bash
 cosign verify-blob \
   --bundle checksums.txt.bundle \
   --certificate-oidc-issuer "https://gitlab.com" \
-  --certificate-identity-regexp "^https://gitlab.com/.*/.gitlab-ci.yml@refs/heads/main$" \
+  --certificate-identity "https://gitlab.com/IndiDevs/VirtuMic//.gitlab-ci.yml@refs/heads/main" \
   checksums.txt
 ```
 

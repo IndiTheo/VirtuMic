@@ -1,0 +1,14 @@
+.cliff_resolve:
+  script:
+    - |
+      CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMPONENT}/**" --tag-pattern "${COMPONENT}-v[0-9]*")
+      if [ -z "$(git tag -l "${COMPONENT}-v*")" ]; then
+        TAG_NAME="${COMPONENT}-v0.1.0"
+        [ -n "${PRE_RELEASE:-}" ] && TAG_NAME="${TAG_NAME}-${PRE_RELEASE}.0"
+      else
+        TAG_NAME=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version --bump "${PRE_RELEASE:-auto}")
+      fi
+      DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME")
+      [ -z "$DESCRIPTION" ] && echo "No releasable changes for $COMPONENT." && exit 0
+      NEXT_VERSION="${TAG_NAME#"${COMPONENT}-v"}"
+      export TAG_NAME NEXT_VERSION DESCRIPTION

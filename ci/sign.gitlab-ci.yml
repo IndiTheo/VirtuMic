@@ -1,0 +1,97 @@
+include:
+  - local: 'ci/release-metadata.gitlab-ci.yml'
+
+sign:app:
+  extends: .release_base
+  stage: prepare
+  variables:
+    COMPONENT: "app"
+  id_tokens:
+    SIGSTORE_ID_TOKEN:
+      aud: "sigstore"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - virtumic-app/**/*
+        - virtumic-service/**/*
+        - virtumic-core/**/*
+        - lib/privilege-hub/**/*
+        - systemless-overlay-module/**/*
+        - "**/{BUILD,BUILD.bazel}"
+        - "**/MODULE.bazel"
+        - "ci/**/*"
+        - ".gitlab-ci.yml"
+  needs:
+    - job: build:app
+      artifacts: true
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - !reference [.cliff_resolve, script]
+    - |
+      echo "Signing release assets for $TAG_NAME..."
+      [ -n "$ANDROID_KEYSTORE_BASE64" ] || { echo "ERROR: ANDROID_KEYSTORE_BASE64 variable is missing!"; exit 1; }
+
+      APKS="dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk dist/virtumic-privilege-extension.zip"
+      for FILE in $APKS; do
+        [ -f "$FILE" ] || { echo "Required asset not found: $FILE"; exit 1; }
+      done
+
+      echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/release.keystore
+      chmod 600 /tmp/release.keystore
+
+      APKSIGNER=$(command -v apksigner 2>/dev/null || find "$ANDROID_HOME/build-tools" -name apksigner 2>/dev/null | sort -V | tail -n 1)
+      [ -n "$APKSIGNER" ] || { echo "ERROR: apksigner not found!"; exit 1; }
+
+      for APK in dist/virtumic-full.apk dist/virtumic-arm64.apk dist/virtumic-x86_64.apk; do
+        echo "Signing $APK..."
+        "$APKSIGNER" sign \
+          --ks /tmp/release.keystore \
+          --ks-pass pass:"$ANDROID_KEYSTORE_PASSWORD" \
+          --ks-key-alias "$ANDROID_KEY_ALIAS" \
+          --key-pass pass:"$ANDROID_KEY_PASSWORD" \
+          "$APK"
+        "$APKSIGNER" verify --verbose --print-certs "$APK"
+      done
+
+      (cd dist && sha256sum virtumic-full.apk virtumic-arm64.apk virtumic-x86_64.apk virtumic-privilege-extension.zip) > dist/checksums.txt
+
+      if [ -n "${GPG_SECRET_KEY:-}" ]; then
+        export GNUPGHOME="/tmp/gnupg-release"
+        mkdir -p -m 700 "$GNUPGHOME"
+        echo "$GPG_SECRET_KEY" | base64 -d | gpg --batch --import
+        GPG_PASS_DECODED=$(echo "$GPG_PASSPHRASE" | base64 -d)
+        gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASS_DECODED" --armor --detach-sign dist/checksums.txt
+      fi
+
+      echo "Signing checksums.txt with keyless Cosign (Sigstore OIDC)..."
+      COSIGN_YES=true cosign sign-blob \
+        --yes \
+        --bundle dist/checksums.txt.bundle \
+        dist/checksums.txt
+
+      EXPECTED_IDENTITY="https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}//.gitlab-ci.yml@refs/heads/${CI_DEFAULT_BRANCH}"
+      echo "Verifying Cosign signature against expected identity: $EXPECTED_IDENTITY"
+
+      cosign verify-blob \
+        --bundle dist/checksums.txt.bundle \
+        --certificate-oidc-issuer "https://${CI_SERVER_HOST}" \
+        --certificate-identity "$EXPECTED_IDENTITY" \
+        dist/checksums.txt
+
+      PKG_BASE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/${NEXT_VERSION}"
+      CLEAN_VER=$(echo "$NEXT_VERSION" | sed 's/^v//' | cut -d- -f1)
+      VERSION_CODE=$(cat dist/version_code.txt)
+      [ -n "$VERSION_CODE" ] || { echo "ERROR: version_code.txt is missing or empty!"; exit 1; }
+
+      jq -n \
+        --arg version "v${CLEAN_VER}" \
+        --argjson versionCode "${VERSION_CODE}" \
+        --arg zipUrl "${PKG_BASE_URL}/virtumic-privilege-extension.zip" \
+        --arg changelog "https://gitlab.com/IndiDevs/VirtuMic/-/releases/${TAG_NAME}" \
+        '{version: $version, versionCode: $versionCode, zipUrl: $zipUrl, changelog: $changelog}' > dist/module_update.json
+  after_script:
+    - rm -rf /tmp/release.keystore /tmp/gnupg-release
+  artifacts:
+    paths:
+      - dist/
