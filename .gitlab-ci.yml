@@ -462,7 +462,7 @@ release:service:
         $FILES_TO_UPLOAD \
         --draft \
         --title "$TAG_TITLE" \
-        --notes "$DESCRIPTION" \
+        --notes-file - \
         --repo "${GITHUB_REPOSITORY}"
 
       echo "Successfully published draft release $TAG_NAME to GitHub (${GITHUB_REPOSITORY})!"
