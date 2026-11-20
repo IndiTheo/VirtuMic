@@ -8,13 +8,24 @@
       else
         BUMPED=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version)
         if [ -n "${PRE_RELEASE:-}" ]; then
-          COUNT=$(git tag -l "${BUMPED}-${PRE_RELEASE}.*" | wc -l)
-          TAG_NAME="${BUMPED}-${PRE_RELEASE}.$((COUNT + 1))"
+          CLEAN_BUMPED="${BUMPED%%-${PRE_RELEASE}*}"
+          COUNT=$(git tag -l "${CLEAN_BUMPED}-${PRE_RELEASE}.*" | wc -l)
+          TAG_NAME="${CLEAN_BUMPED}-${PRE_RELEASE}.$((COUNT + 1))"
         else
           TAG_NAME="$BUMPED"
         fi
       fi
-      DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME")
-      [ -z "$DESCRIPTION" ] && echo "No releasable changes for $COMPONENT." && exit 0
       NEXT_VERSION="${TAG_NAME#"${COMPONENT}-v"}"
+      DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME")
+
+      if [ -z "$DESCRIPTION" ]; then
+        echo "ERROR: No unreleased changes found for $TAG_NAME ($COMPONENT)." >&2
+        exit 1
+      fi
+
+      mkdir -p dist
+      printf '%s\n' "$DESCRIPTION" > dist/release_notes.md
+      echo "TAG_NAME=$TAG_NAME" > release.env
+      echo "NEXT_VERSION=$NEXT_VERSION" >> release.env
+
       export TAG_NAME NEXT_VERSION DESCRIPTION

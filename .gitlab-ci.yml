@@ -78,6 +78,12 @@ stages:
     GIT_DEPTH: 0
     GIT_STRATEGY: clone
     MISE_CONFIG_FILE: "ci/release-mise.toml"
+  artifacts:
+    name: "release-${COMPONENT}-${CI_COMMIT_REF_NAME}"
+    paths:
+      - dist/release_notes.md
+    reports:
+      dotenv: release.env
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
@@ -437,7 +443,6 @@ release:service:
   extends: .release_base
   script:
     - eval "$(mise activate bash --quiet)"
-    - !reference [.cliff_resolve, script]
     - |
       if [ -z "${GH_TOKEN:-}" ] || [ -z "${GITHUB_REPOSITORY:-}" ]; then
         echo "ERROR: GH_TOKEN or GITHUB_REPOSITORY variable is missing!"
@@ -460,11 +465,11 @@ release:service:
 
       TAG_TITLE="VirtuMic ${COMPONENT^} ${NEXT_VERSION} | $(date +%Y-%m-%d)"
 
-      printf '%s\n' "$DESCRIPTION" | GH_TOKEN="${GH_TOKEN}" gh release create "$TAG_NAME" \
+      GH_TOKEN="${GH_TOKEN}" gh release create "$TAG_NAME" \
         $FILES_TO_UPLOAD \
         --draft \
         --title "$TAG_TITLE" \
-        --notes-file - \
+        --notes-file dist/release_notes.md \
         --repo "${GITHUB_REPOSITORY}"
 
       echo "Successfully published draft release $TAG_NAME to GitHub (${GITHUB_REPOSITORY})!"
@@ -474,6 +479,8 @@ publish:github:app:
   variables:
     COMPONENT: "app"
   needs:
+    - job: release:app
+      artifacts: true
     - job: sign:app
       artifacts: true
 
@@ -482,6 +489,8 @@ publish:github:core:
   variables:
     COMPONENT: "core"
   needs:
+    - job: release:core
+      artifacts: true
     - job: build_core_library
       artifacts: true
 
@@ -490,5 +499,7 @@ publish:github:service:
   variables:
     COMPONENT: "service"
   needs:
+    - job: release:service
+      artifacts: true
     - job: build_service_library
       artifacts: true
