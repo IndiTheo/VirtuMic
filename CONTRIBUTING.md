@@ -140,10 +140,11 @@ If you find another way to make code highlighting functional, let us know.
 
 - Modularity and architectural decoupling
 - Compliance with state-of-the-art Kotlin and Android practices
+- Prefer static binding over dynamic binding
+- Avoid JVM reflection
 
 ## Pull Requests
 
 1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Ensure your code follows the existing project style.
-4. Submit a pull request with a clear description of your changes.
+2. Ensure your code follows the existing project style.
+3. Submit a pull request with a clear description of your changes.

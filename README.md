@@ -120,22 +120,21 @@ Ensure the released assets come from the official developer and haven't been cor
 
 ## Contributing & Support
 
-You can help improve the project or get help
+You can help improve the project or get help:
 
-- If something is unclear, you can ask a question
 - If you encounter issues or want to request a feature, open an issue
 - If you want to contribute code, feel free to open a PR
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for directions.
 
 
-## Sources
+## Acknowledgements
 
 - [flyfishxu / Kadb](https://github.com/flyfishxu/Kadb)
 - prominent [POC](https://github.com/Genymobile/scrcpy/issues/3880#issuecomment-1595722119) in the
   field by [yume-chan](https://github.com/yume-chan)
 - [Taming Bazel Dependency Conflicts: An Android Case Study / Taufik Amaryansyah](https://medium.com/@taufik.amary/taming-bazel-dependency-conflicts-an-android-case-study-44b7926839be)
-- [Building a Modern Android Music Player App with Bazel, Jetpack Compose, and ExoPlayer](https://medium.com/@taufik.amary/building-a-modern-android-music-player-app-with-bazel-jetpack-compose-and-exoplayer-4a70039655f2)
+- [Building a Modern Android Music Player App with Bazel, Jetpack Compose, and ExoPlayer / Taufik Amaryansyah](https://medium.com/@taufik.amary/building-a-modern-android-music-player-app-with-bazel-jetpack-compose-and-exoplayer-4a70039655f2)
 
 ## Notice
 
