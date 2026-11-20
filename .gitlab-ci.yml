@@ -199,6 +199,7 @@ build_docs:
       allow_failure: true
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
+      allow_failure: true
 
 # --- PUBLISH (Internal) - Following adbeesh's publish_internal pattern EXACTLY ---
 
@@ -243,6 +244,7 @@ publish_service_internal:
 .preview_component_base:
   extends: .release_base
   stage: preview
+  needs: []
   cache: []
   script:
     - eval "$(mise activate bash --quiet)"
