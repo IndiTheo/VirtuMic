@@ -243,13 +243,6 @@ publish_service_internal:
   extends: .release_base
   stage: preview
   cache: []
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - "$PACKAGE_PATH/**/*"
-      when: manual
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
   script:
     - eval "$(mise activate bash --quiet)"
     - |
@@ -378,19 +371,34 @@ preview:core:
   extends: .preview_component_base
   variables:
     COMPONENT: "core"
-    PACKAGE_PATH: "virtumic-core"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *core_changes
+      when: manual
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
 
 preview:service:
   extends: .preview_component_base
   variables:
     COMPONENT: "service"
-    PACKAGE_PATH: "virtumic-service"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *service_changes
+      when: manual
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
 
 preview:app:
   extends: .preview_component_base
   variables:
     COMPONENT: "app"
-    PACKAGE_PATH: "virtumic-app"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *app_changes
+      when: manual
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
 
 # --- RELEASE JOBS ---
 
