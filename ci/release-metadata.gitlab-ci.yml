@@ -23,8 +23,9 @@
         exit 1
       fi
 
-      mkdir -p dist
-      printf '%s\n' "$DESCRIPTION" > dist/release_notes.md
+      NOTES_FILE="${RELEASE_NOTES_FILE:-dist/release_notes.md}"
+      mkdir -p "$(dirname "$NOTES_FILE")"
+      printf '%s\n' "$DESCRIPTION" > "$NOTES_FILE"
       echo "TAG_NAME=$TAG_NAME" > release.env
       echo "NEXT_VERSION=$NEXT_VERSION" >> release.env
 

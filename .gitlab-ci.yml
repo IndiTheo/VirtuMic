@@ -10,6 +10,7 @@ include:
 variables:
   CI_BASE_IMAGE: "$CI_REGISTRY_IMAGE:latest"
   CI_RELEASE_IMAGE: "$CI_REGISTRY_IMAGE/release:latest"
+  RELEASE_NOTES_FILE: "dist/release_notes.md"
 
 default:
   interruptible: true
@@ -81,7 +82,7 @@ stages:
   artifacts:
     name: "release-${COMPONENT}-${CI_COMMIT_REF_NAME}"
     paths:
-      - dist/release_notes.md
+      - $RELEASE_NOTES_FILE
     reports:
       dotenv: release.env
   rules:
@@ -103,6 +104,16 @@ stages:
     LINKS_JSON="[]"
     if [ -f "dist/asset_links.json" ]; then
       LINKS_JSON=$(cat dist/asset_links.json)
+    fi
+
+    if [ -z "${DESCRIPTION:-}" ]; then
+      NOTES_FILE="${RELEASE_NOTES_FILE:-dist/release_notes.md}"
+      if [ -f "$NOTES_FILE" ]; then
+        DESCRIPTION=$(cat "$NOTES_FILE")
+      else
+        echo "ERROR: Release notes ($NOTES_FILE) and DESCRIPTION are missing! Cannot create release without notes."
+        exit 1
+      fi
     fi
 
     PAYLOAD=$(jq -n \
