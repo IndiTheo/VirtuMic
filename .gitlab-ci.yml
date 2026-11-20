@@ -254,6 +254,7 @@ publish_service_internal:
     GIT_DEPTH: 0
     GIT_STRATEGY: clone
     MISE_CONFIG_FILE: "ci/release-mise.toml"
+  needs: []
   artifacts:
     name: "metadata-${COMPONENT}-${CI_COMMIT_REF_NAME}"
     paths:
@@ -272,8 +273,6 @@ prepare_metadata:app:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: manual
 
 prepare_metadata:core:
   extends: .prepare_metadata_base
@@ -282,8 +281,6 @@ prepare_metadata:core:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: manual
 
 prepare_metadata:service:
   extends: .prepare_metadata_base
@@ -291,8 +288,6 @@ prepare_metadata:service:
     COMPONENT: "service"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
 
 # --- RELEASE JOBS ---
