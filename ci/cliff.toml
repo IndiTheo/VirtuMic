@@ -25,6 +25,8 @@ commit_parsers = [
     { message = "^feat\\(security\\):", group = "Security" },
     { message = "^fix\\(security\\):", group = "Security" },
     { message = "^feat(\\(.*\\))?:.*deprecat", group = "Deprecated" },
+    { message = "^feat\\(overlay\\):", group = "Magic Mount" },
+    { message = "^fix\\(overlay\\):", group = "Magic Mount" },
     { message = "^feat", group = "Features" },
     { message = "^fix", group = "Bug Fixes" },
     { message = "^perf", group = "Performance" },

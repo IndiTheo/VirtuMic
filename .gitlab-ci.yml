@@ -63,7 +63,7 @@ stages:
   - systemless-overlay-module/**/*
   - "**/{BUILD,BUILD.bazel}"
   - "**/MODULE.bazel"
-  - "ci/**/*"
+  - "ci/*.yml"
   - ".gitlab-ci.yml"
 
 .build_base:
