@@ -11,6 +11,7 @@ sign:app:
       aud: "sigstore"
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
   needs:
     - job: build:app
       artifacts: true
