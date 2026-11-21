@@ -3,7 +3,7 @@ include:
 
 sign:app:
   extends: .release_base
-  stage: prepare
+  stage: release
   variables:
     COMPONENT: "app"
   id_tokens:

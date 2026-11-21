@@ -36,10 +36,10 @@ cache:
 stages:
   - infra
   - lint
+  - bootstrap
   - build
   - docs
   - preview
-  - prepare
   - release
 
 # --- BASE TEMPLATES & ANCHORS ---
@@ -129,7 +129,6 @@ stages:
       --header "Content-Type: application/json" \
       --data "$PAYLOAD"
 
-# Build core library
 build_core_library:
   extends: .build_base
   script:
@@ -146,7 +145,6 @@ build_core_library:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *core_changes
 
-# Build service library
 build_service_library:
   extends: .build_base
   script:
@@ -163,12 +161,18 @@ build_service_library:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *service_changes
 
-# Build app
 build:app:
   extends: .build_base
+  timeout: 90m
+  tags:
+    - saas-linux-medium-amd64
   needs:
     - job: build_ci_base_image
       optional: true
+    - job: prepare_metadata:app
+      optional: true
+      artifacts: true
+
   artifacts:
     paths:
       - dist/virtumic-full.apk
@@ -179,7 +183,14 @@ build:app:
   script:
     - eval "$(mise activate bash --quiet)"
     - mkdir -p dist
-    - export VERSION="${CI_COMMIT_TAG#"app-v"}"
+    - |
+      if [ -f ./release.env ]; then
+        . ./release.env
+        export VERSION="${NEXT_VERSION}"
+      elif [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        echo "ERROR: release.env missing on default-branch pipeline. Need version info to continue!" >&2
+        exit 1
+      fi
     - UPDATE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/latest/module_update.json"
     - bazel build --config=ci --define UPDATE_JSON_URL="$UPDATE_URL" //:overlay //:generate_version_code
     - cp bazel-bin/virtumic-privilege-extension.zip dist/virtumic-privilege-extension.zip
@@ -195,9 +206,6 @@ build:app:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *app_changes
 
-
-# --- DOCS ---
-#
 build_docs:
   extends: .build_base
   stage: docs
@@ -221,9 +229,6 @@ build_docs:
       when: manual
       allow_failure: true
 
-# --- PUBLISH (Internal) - Following adbeesh's publish_internal pattern EXACTLY ---
-
-# Publish core library internally
 publish_core_internal:
   extends: .build_base
   stage: preview
@@ -241,7 +246,6 @@ publish_core_internal:
   needs:
     - job: build_core_library
 
-# Publish service library internally
 publish_service_internal:
   extends: .build_base
   stage: preview
@@ -259,10 +263,8 @@ publish_service_internal:
   needs:
     - job: build_service_library
 
-# --- PREPARE METADATA JOBS ---
-
 .prepare_metadata_base:
-  stage: prepare
+  stage: bootstrap
   image: $CI_RELEASE_IMAGE
   variables:
     GIT_DEPTH: 0
@@ -429,8 +431,6 @@ release:app:
 
     - *tag_push
 
-# --- PREVIEW JOBS ---
-
 preview:core:
   extends: .preview_component_base
   variables:
@@ -491,8 +491,6 @@ release:service:
       artifacts: true
     - job: build_service_library
       artifacts: true
-
-# --- GITHUB RELEASE JOBS ---
 
 .release_github_base:
   extends: .release_base

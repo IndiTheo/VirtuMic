@@ -1,5 +1,5 @@
 def _version_from_env_impl(repository_ctx):
-    version = repository_ctx.os.environ.get("VERSION", "0.0.0")
+    version = repository_ctx.os.environ.get("VERSION", "0.0.0") or "0.0.0"
     repository_ctx.file("version.bzl", "VERSION = \"%s\"" % version)
     repository_ctx.file("BUILD.bazel", "")
 

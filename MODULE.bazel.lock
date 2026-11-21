@@ -339,7 +339,7 @@
   "moduleExtensions": {
     "//tools:version.bzl%version_extension": {
       "general": {
-        "bzlTransitiveDigest": "NUc/NuVJJBBvEDGg4tbNKkxZJwBLj2gqqIWPxoM9EQE=",
+        "bzlTransitiveDigest": "E+FZJhsRObTDY4ejmwH0txxjnKsYDiRpCDGZvDUF184=",
         "usagesDigest": "DSAgg8tb1yiTvNeuMubd0NYHGu+gPR8mbXdIf1gpg18=",
         "recordedInputs": [],
         "generatedRepoSpecs": {
