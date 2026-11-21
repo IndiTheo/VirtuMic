@@ -16,7 +16,9 @@ as a live microphone feed.
 
 ## Download App
 
-_Coming soon..._
+### [Releases](https://gitlab.com/IndiDevs/VirtuMic/-/releases)
+
+#### [Mirror](https://github.com/IndiTheo/VirtuMic/releases)
 
 ## Requirements
 
