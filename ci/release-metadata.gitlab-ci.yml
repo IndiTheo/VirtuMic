@@ -1,3 +1,5 @@
+# Resolve single component metadata
+# Evaluates git-cliff for a single component and exports tag name and next version
 .cliff_resolve:
   script:
     - |
@@ -23,10 +25,143 @@
         exit 1
       fi
 
-      NOTES_FILE="${RELEASE_NOTES_FILE:-dist/release_notes.md}"
+      NOTES_FILE="dist/release_notes_${COMPONENT}.md"
       mkdir -p "$(dirname "$NOTES_FILE")"
       printf '%s\n' "$DESCRIPTION" > "$NOTES_FILE"
       echo "TAG_NAME=$TAG_NAME" > release.env
       echo "NEXT_VERSION=$NEXT_VERSION" >> release.env
 
       export TAG_NAME NEXT_VERSION DESCRIPTION
+
+
+# Helper: Append upstream component dependency versions to release notes
+# Formats latest published tags for core and service into the markdown changelog
+.append_upstream_deps:
+  script:
+    - |
+      UPSTREAM_DEPS=()
+      case "$COMPONENT" in
+        service) UPSTREAM_DEPS=("core") ;;
+        app)     UPSTREAM_DEPS=("service" "core") ;;
+      esac
+
+      if [ ${#UPSTREAM_DEPS[@]} -gt 0 ]; then
+        DEPS_TEXT=""
+        for UP_COMP in "${UPSTREAM_DEPS[@]}"; do
+          UP_TAG=$(git tag -l "${UP_COMP}-v*" --sort=-v:refname | head -n 1)
+          if [ -n "$UP_TAG" ]; then
+            UP_VER="${UP_TAG#"${UP_COMP}-v"}"
+            UP_NAME="$(tr '[:lower:]' '[:upper:]' <<< ${UP_COMP:0:1})${UP_COMP:1}"
+            DEPS_TEXT="${DEPS_TEXT}\n- **VirtuMic ${UP_NAME}**: \`${UP_VER}\` (\`${UP_TAG}\`)"
+          fi
+        done
+
+        if [ -n "$DEPS_TEXT" ]; then
+          DESCRIPTION="${DESCRIPTION}$(printf '\n\n#### Upstream Dependencies%b' "$DEPS_TEXT")"
+          NOTES_FILE="dist/release_notes_${COMPONENT}.md"
+          printf '%s\n' "$DESCRIPTION" > "$NOTES_FILE"
+        fi
+      fi
+
+
+# Pre-calculates versions and release notes for all components in two fast loops
+bootstrap_metadata:
+  stage: bootstrap
+  image: $CI_RELEASE_IMAGE
+  variables:
+    GIT_DEPTH: 0
+    GIT_STRATEGY: clone
+    MISE_CONFIG_FILE: "ci/release-mise.toml"
+  needs: []
+  artifacts:
+    name: "metadata-${CI_COMMIT_REF_NAME}"
+    paths:
+      - dist/
+      - release.env
+    reports:
+      dotenv: release.env
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - |
+      rm -f release.env
+      mkdir -p dist
+
+      # Pass 1: Resolve current published tags and next semver for all components
+      for COMP in core service app; do
+        COMP_UPPER=$(echo "$COMP" | tr '[:lower:]' '[:upper:]')
+
+        CURRENT_TAG=$(git tag -l "${COMP}-v*" --sort=-v:refname | head -n 1)
+        CURRENT_VER=""
+        if [ -n "$CURRENT_TAG" ]; then
+          CURRENT_VER="${CURRENT_TAG#"${COMP}-v"}"
+        fi
+
+        CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMP}/**" --tag-pattern "${COMP}-v[0-9]*")
+        if [ -z "$CURRENT_TAG" ]; then
+          TAG_NAME="${COMP}-v0.1.0"
+          [ -n "${PRE_RELEASE:-}" ] && TAG_NAME="${TAG_NAME}-${PRE_RELEASE}.0"
+        else
+          BUMPED=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version 2>/dev/null || echo "$CURRENT_TAG")
+          if [ -n "${PRE_RELEASE:-}" ]; then
+            CLEAN_BUMPED="${BUMPED%%-${PRE_RELEASE}*}"
+            COUNT=$(git tag -l "${CLEAN_BUMPED}-${PRE_RELEASE}.*" | wc -l)
+            TAG_NAME="${CLEAN_BUMPED}-${PRE_RELEASE}.$((COUNT + 1))"
+          else
+            TAG_NAME="$BUMPED"
+          fi
+        fi
+        NEXT_VER="${TAG_NAME#"${COMP}-v"}"
+
+        eval "${COMP_UPPER}_CURRENT_TAG='$CURRENT_TAG'"
+        eval "${COMP_UPPER}_CURRENT_VER='$CURRENT_VER'"
+        eval "${COMP_UPPER}_NEXT_TAG_NAME='$TAG_NAME'"
+        eval "${COMP_UPPER}_NEXT_VER='$NEXT_VER'"
+
+        # Export versions to release.env for GitLab CI dotenv reports
+        echo "${COMP_UPPER}_CURRENT_TAG=$CURRENT_TAG" >> release.env
+        echo "${COMP_UPPER}_CURRENT_VERSION=$CURRENT_VER" >> release.env
+        echo "${COMP_UPPER}_NEXT_TAG_NAME=$TAG_NAME" >> release.env
+        echo "${COMP_UPPER}_NEXT_VERSION=$NEXT_VER" >> release.env
+      done
+
+      # Pass 2: Extract git-cliff changelogs and format upstream dependency sections
+      for COMP in core service app; do
+        COMP_UPPER=$(echo "$COMP" | tr '[:lower:]' '[:upper:]')
+        TAG_VAR="${COMP_UPPER}_NEXT_TAG_NAME"
+        TAG_NAME="${!TAG_VAR}"
+
+        CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMP}/**" --tag-pattern "${COMP}-v[0-9]*")
+        DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME" 2>/dev/null || echo "Release $TAG_NAME")
+
+        UPSTREAM_DEPS=()
+        case "$COMP" in
+          service) UPSTREAM_DEPS=("core") ;;
+          app)     UPSTREAM_DEPS=("service" "core") ;;
+        esac
+
+        if [ ${#UPSTREAM_DEPS[@]} -gt 0 ]; then
+          DEPS_TEXT=""
+          for UP_COMP in "${UPSTREAM_DEPS[@]}"; do
+            UP_UPPER=$(echo "$UP_COMP" | tr '[:lower:]' '[:upper:]')
+            UP_TAG_VAR="${UP_UPPER}_CURRENT_TAG"
+            UP_VER_VAR="${UP_UPPER}_CURRENT_VERSION"
+            UP_TAG="${!UP_TAG_VAR}"
+            UP_VER="${!UP_VER_VAR}"
+
+            if [ -n "$UP_TAG" ]; then
+              UP_NAME="$(tr '[:lower:]' '[:upper:]' <<< ${UP_COMP:0:1})${UP_COMP:1}"
+              DEPS_TEXT="${DEPS_TEXT}\n- **VirtuMic ${UP_NAME}**: \`${UP_VER}\` (\`${UP_TAG}\`)"
+            fi
+          done
+
+          if [ -n "$DEPS_TEXT" ]; then
+            DESCRIPTION="${DESCRIPTION}$(printf '\n\n#### Upstream Dependencies%b' "$DEPS_TEXT")"
+          fi
+        fi
+
+        NOTES_FILE="dist/release_notes_${COMP}.md"
+        printf '%s\n' "$DESCRIPTION" > "$NOTES_FILE"
+      done

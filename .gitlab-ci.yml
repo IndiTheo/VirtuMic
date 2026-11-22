@@ -10,7 +10,6 @@ include:
 variables:
   CI_BASE_IMAGE: "$CI_REGISTRY_IMAGE:latest"
   CI_RELEASE_IMAGE: "$CI_REGISTRY_IMAGE/release:latest"
-  RELEASE_NOTES_FILE: "dist/release_notes.md"
 
 default:
   interruptible: true
@@ -86,7 +85,7 @@ stages:
   artifacts:
     name: "release-${COMPONENT}-${CI_COMMIT_REF_NAME}"
     paths:
-      - $RELEASE_NOTES_FILE
+      - dist/release_notes_*.md
     reports:
       dotenv: release.env
   rules:
@@ -111,11 +110,11 @@ stages:
     fi
 
     if [ -z "${DESCRIPTION:-}" ]; then
-      NOTES_FILE="${RELEASE_NOTES_FILE:-dist/release_notes.md}"
+      NOTES_FILE="dist/release_notes_${COMPONENT}.md"
       if [ -f "$NOTES_FILE" ]; then
         DESCRIPTION=$(cat "$NOTES_FILE")
       else
-        echo "ERROR: Release notes ($NOTES_FILE) and DESCRIPTION are missing! Cannot create release without notes."
+        echo "ERROR: Release notes file $NOTES_FILE is missing! Cannot create release without notes." >&2
         exit 1
       fi
     fi
@@ -179,7 +178,7 @@ build:app:
   needs:
     - job: build_ci_base_image
       optional: true
-    - job: prepare_metadata:app
+    - job: bootstrap_metadata
       optional: true
       artifacts: true
 
@@ -282,7 +281,7 @@ stage_maven:core:
   needs:
     - job: build_library:core
       artifacts: true
-    - job: prepare_metadata:core
+    - job: bootstrap_metadata
       artifacts: true
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -309,7 +308,7 @@ stage_maven:service:
   needs:
     - job: build_library:service
       artifacts: true
-    - job: prepare_metadata:service
+    - job: bootstrap_metadata
       artifacts: true
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -340,7 +339,7 @@ publish_maven:core:
   needs:
     - job: stage_maven:core
       artifacts: true
-    - job: prepare_metadata:core
+    - job: bootstrap_metadata
       artifacts: true
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -372,7 +371,7 @@ publish_maven:service:
   needs:
     - job: stage_maven:service
       artifacts: true
-    - job: prepare_metadata:service
+    - job: bootstrap_metadata
       artifacts: true
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -390,46 +389,6 @@ publish_maven:service:
     - export JRELEASER_GPG_SECRET_KEY=$(echo "$JRELEASER_GPG_SECRET_KEY" | base64 -d)
     - jreleaser deploy --config-file ci/jreleaser.yml
     - *tag_push
-
-.prepare_metadata_base:
-  stage: bootstrap
-  image: $CI_RELEASE_IMAGE
-  variables:
-    GIT_DEPTH: 0
-    GIT_STRATEGY: clone
-    MISE_CONFIG_FILE: "ci/release-mise.toml"
-  needs: []
-  artifacts:
-    name: "metadata-${COMPONENT}-${CI_COMMIT_REF_NAME}"
-    paths:
-      - dist/release_notes.md
-      - release.env
-    reports:
-      dotenv: release.env
-  script:
-    - eval "$(mise activate bash --quiet)"
-    - !reference [.cliff_resolve, script]
-
-prepare_metadata:app:
-  extends: .prepare_metadata_base
-  variables:
-    COMPONENT: "app"
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-prepare_metadata:core:
-  extends: .prepare_metadata_base
-  variables:
-    COMPONENT: "core"
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-prepare_metadata:service:
-  extends: .prepare_metadata_base
-  variables:
-    COMPONENT: "service"
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # --- RELEASE JOBS ---
 
@@ -504,7 +463,7 @@ release:app:
   variables:
     COMPONENT: "app"
   needs:
-    - job: prepare_metadata:app
+    - job: bootstrap_metadata
       artifacts: true
     - job: sign:app
       artifacts: true
@@ -605,7 +564,7 @@ release:core:
   variables:
     COMPONENT: "core"
   needs:
-    - job: prepare_metadata:core
+    - job: bootstrap_metadata
       artifacts: true
     - job: build_library:core
       artifacts: true
@@ -615,7 +574,7 @@ release:service:
   variables:
     COMPONENT: "service"
   needs:
-    - job: prepare_metadata:service
+    - job: bootstrap_metadata
       artifacts: true
     - job: build_library:service
       artifacts: true
@@ -646,11 +605,14 @@ release:service:
 
       TAG_TITLE="VirtuMic ${COMPONENT^} ${NEXT_VERSION} | $(date +%Y-%m-%d)"
 
+      NOTES_FILE="dist/release_notes_${COMPONENT}.md"
+      [ -f "$NOTES_FILE" ] || NOTES_FILE="dist/release_notes.md"
+
       GH_TOKEN="${GH_TOKEN}" gh release create "$TAG_NAME" \
         $FILES_TO_UPLOAD \
         --draft \
         --title "$TAG_TITLE" \
-        --notes-file dist/release_notes.md \
+        --notes-file "$NOTES_FILE" \
         --repo "${GITHUB_REPOSITORY}"
 
       echo "Successfully published draft release $TAG_NAME to GitHub (${GITHUB_REPOSITORY})!"
@@ -660,7 +622,7 @@ release:github:app:
   variables:
     COMPONENT: "app"
   needs:
-    - job: prepare_metadata:app
+    - job: bootstrap_metadata
       artifacts: true
     - job: sign:app
       artifacts: true
@@ -670,7 +632,7 @@ release:github:core:
   variables:
     COMPONENT: "core"
   needs:
-    - job: prepare_metadata:core
+    - job: bootstrap_metadata
       artifacts: true
     - job: build_library:core
       artifacts: true
@@ -680,7 +642,7 @@ release:github:service:
   variables:
     COMPONENT: "service"
   needs:
-    - job: prepare_metadata:service
+    - job: bootstrap_metadata
       artifacts: true
     - job: build_library:service
       artifacts: true
