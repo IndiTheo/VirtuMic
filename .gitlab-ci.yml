@@ -48,12 +48,16 @@ stages:
   - virtumic-core/**/*
   - "**/{BUILD,BUILD.bazel}"
   - "**/MODULE.bazel"
+  - "ci/*.yml"
+  - ".gitlab-ci.yml"
 
 .service_changes: &service_changes
   - virtumic-service/**/*
   - virtumic-core/**/*  # Service depends on core
   - "**/{BUILD,BUILD.bazel}"
   - "**/MODULE.bazel"
+  - "ci/*.yml"
+  - ".gitlab-ci.yml"
 
 .app_changes: &app_changes
   - virtumic-app/**/*
@@ -129,7 +133,7 @@ stages:
       --header "Content-Type: application/json" \
       --data "$PAYLOAD"
 
-build_core_library:
+build_library:core:
   extends: .build_base
   script:
     - eval "$(mise activate bash --quiet)"
@@ -140,12 +144,15 @@ build_core_library:
     paths:
       - build/outputs/
     expire_in: 1 week
+  needs:
+    - job: build_ci_base_image
+      optional: true
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *core_changes
 
-build_service_library:
+build_library:service:
   extends: .build_base
   script:
     - eval "$(mise activate bash --quiet)"
@@ -156,6 +163,9 @@ build_service_library:
     paths:
       - build/outputs/
     expire_in: 1 week
+  needs:
+    - job: build_ci_base_image
+      optional: true
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -229,7 +239,7 @@ build_docs:
       when: manual
       allow_failure: true
 
-publish_core_internal:
+publish_internal:core:
   extends: .build_base
   stage: preview
   variables:
@@ -244,9 +254,9 @@ publish_core_internal:
     - eval "$(mise activate bash --quiet)"
     - bazel run --config=ci //virtumic-core:publish
   needs:
-    - job: build_core_library
+    - job: build_library:core
 
-publish_service_internal:
+publish_internal:service:
   extends: .build_base
   stage: preview
   variables:
@@ -261,7 +271,125 @@ publish_service_internal:
     - eval "$(mise activate bash --quiet)"
     - bazel run --config=ci //virtumic-service:publish
   needs:
-    - job: build_service_library
+    - job: build_library:service
+
+stage_maven:core:
+  extends: .build_base
+  stage: release
+  variables:
+    COMPONENT: "core"
+    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy-core"
+  needs:
+    - job: build_library:core
+      artifacts: true
+    - job: prepare_metadata:core
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  before_script:
+    - eval "$(mise activate bash --quiet)"
+  script:
+    - export VERSION="$NEXT_VERSION"
+    - bazel build --config=ci "//virtumic-core:dist_maven"
+    - rm -rf "${JRELEASER_STAGING_REPOSITORY}" && mkdir -p "${JRELEASER_STAGING_REPOSITORY}"
+    - unzip -o "bazel-bin/virtumic-core/dist_maven.zip" -d "${JRELEASER_STAGING_REPOSITORY}"
+  artifacts:
+    name: "staging-core-${CI_COMMIT_REF_NAME}"
+    paths:
+      - build/staging-deploy-core
+    expire_in: 1 day
+
+stage_maven:service:
+  extends: .build_base
+  stage: release
+  variables:
+    COMPONENT: "service"
+    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy-service"
+  needs:
+    - job: build_library:service
+      artifacts: true
+    - job: prepare_metadata:service
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  before_script:
+    - eval "$(mise activate bash --quiet)"
+  script:
+    - export VERSION="$NEXT_VERSION"
+    - bazel build --config=ci "//virtumic-service:dist_maven"
+    - rm -rf "${JRELEASER_STAGING_REPOSITORY}" && mkdir -p "${JRELEASER_STAGING_REPOSITORY}"
+    - unzip -o "bazel-bin/virtumic-service/dist_maven.zip" -d "${JRELEASER_STAGING_REPOSITORY}"
+  artifacts:
+    name: "staging-service-${CI_COMMIT_REF_NAME}"
+    paths:
+      - build/staging-deploy-service
+    expire_in: 1 day
+
+publish_maven:core:
+  extends: .release_base
+  stage: release
+  resource_group: "release-core"
+  variables:
+    COMPONENT: "core"
+    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy-core"
+    JRELEASER_GPG_PUBLIC_KEY: "$GPG_PUBLIC_KEY"
+    JRELEASER_GPG_SECRET_KEY: "$GPG_SECRET_KEY"
+    JRELEASER_GPG_PASSPHRASE: "$GPG_PASSPHRASE"
+  needs:
+    - job: stage_maven:core
+      artifacts: true
+    - job: prepare_metadata:core
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  before_script:
+    - eval "$(mise activate bash --quiet)"
+  script:
+    - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
+    - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
+    - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
+    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
+    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
+    - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
+    - export JRELEASER_GPG_PUBLIC_KEY=$(echo "$JRELEASER_GPG_PUBLIC_KEY" | base64 -d)
+    - export JRELEASER_GPG_SECRET_KEY=$(echo "$JRELEASER_GPG_SECRET_KEY" | base64 -d)
+    - jreleaser deploy --config-file ci/jreleaser.yml
+    - *tag_push
+
+publish_maven:service:
+  extends: .release_base
+  stage: release
+  resource_group: "release-service"
+  variables:
+    COMPONENT: "service"
+    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy-service"
+    JRELEASER_GPG_PUBLIC_KEY: "$GPG_PUBLIC_KEY"
+    JRELEASER_GPG_SECRET_KEY: "$GPG_SECRET_KEY"
+    JRELEASER_GPG_PASSPHRASE: "$GPG_PASSPHRASE"
+  needs:
+    - job: stage_maven:service
+      artifacts: true
+    - job: prepare_metadata:service
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  before_script:
+    - eval "$(mise activate bash --quiet)"
+  script:
+    - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
+    - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
+    - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
+    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
+    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
+    - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
+    - export JRELEASER_GPG_PUBLIC_KEY=$(echo "$JRELEASER_GPG_PUBLIC_KEY" | base64 -d)
+    - export JRELEASER_GPG_SECRET_KEY=$(echo "$JRELEASER_GPG_SECRET_KEY" | base64 -d)
+    - jreleaser deploy --config-file ci/jreleaser.yml
+    - *tag_push
 
 .prepare_metadata_base:
   stage: bootstrap
@@ -479,7 +607,7 @@ release:core:
   needs:
     - job: prepare_metadata:core
       artifacts: true
-    - job: build_core_library
+    - job: build_library:core
       artifacts: true
 
 release:service:
@@ -489,7 +617,7 @@ release:service:
   needs:
     - job: prepare_metadata:service
       artifacts: true
-    - job: build_service_library
+    - job: build_library:service
       artifacts: true
 
 .release_github_base:
@@ -544,7 +672,7 @@ release:github:core:
   needs:
     - job: prepare_metadata:core
       artifacts: true
-    - job: build_core_library
+    - job: build_library:core
       artifacts: true
 
 release:github:service:
@@ -554,5 +682,5 @@ release:github:service:
   needs:
     - job: prepare_metadata:service
       artifacts: true
-    - job: build_service_library
+    - job: build_library:service
       artifacts: true
