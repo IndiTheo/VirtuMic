@@ -1,4 +1,5 @@
 [tools]
+java = "17"
 git-cliff = "latest"
 cosign = "latest"
 gh = "latest"
