@@ -34,6 +34,17 @@ stages:
 
 # --- BASE TEMPLATES & ANCHORS ---
 
+.resolve_component_version: &resolve_component_version
+  - |
+    if [ -n "${COMPONENT:-}" ]; then
+      COMP_UPPER=$(echo "$COMPONENT" | tr '[:lower:]' '[:upper:]')
+      VER_VAR="${COMP_UPPER}_NEXT_VERSION"
+      TAG_VAR="${COMP_UPPER}_NEXT_TAG_NAME"
+      NEXT_VERSION="${!VER_VAR:-${NEXT_VERSION:-}}"
+      TAG_NAME="${!TAG_VAR:-${TAG_NAME:-}}"
+      export NEXT_VERSION TAG_NAME
+    fi
+
 .bazel_cache:
   variables:
     BAZEL_CACHE_POLICY: "pull-push"
@@ -180,6 +191,8 @@ build:app:
   timeout: 90m
   tags:
     - saas-linux-medium-amd64
+  variables:
+    COMPONENT: "app"
   needs:
     - job: build_ci_base_image
       optional: true
@@ -200,11 +213,10 @@ build:app:
     - |
       if [ -f ./release.env ]; then
         . ./release.env
-        export VERSION="${NEXT_VERSION}"
-      elif [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
-        echo "ERROR: release.env missing on default-branch pipeline. Need version info to continue!" >&2
-        exit 1
       fi
+    - *resolve_component_version
+    - export VERSION="${NEXT_VERSION}"
+    - '[ -n "$VERSION" ] || { echo "ERROR: VERSION is empty for app!" >&2; exit 1; }'
     - UPDATE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/virtumic-app/latest/module_update.json"
     - bazel build --config=ci --define UPDATE_JSON_URL="$UPDATE_URL" //:overlay //:generate_version_code
     - cp bazel-bin/virtumic-privilege-extension.zip dist/virtumic-privilege-extension.zip
@@ -294,7 +306,13 @@ stage_maven:core:
   before_script:
     - eval "$(mise activate bash --quiet)"
   script:
+    - |
+      if [ -f ./release.env ]; then
+        . ./release.env
+      fi
+    - *resolve_component_version
     - export VERSION="$NEXT_VERSION"
+    - '[ -n "$VERSION" ] || { echo "ERROR: VERSION is empty for core!" >&2; exit 1; }'
     - bazel build --config=ci "//virtumic-core:dist_maven"
     - rm -rf "${JRELEASER_STAGING_REPOSITORY}" && mkdir -p "${JRELEASER_STAGING_REPOSITORY}"
     - unzip -o "bazel-bin/virtumic-core/dist_maven.zip" -d "${JRELEASER_STAGING_REPOSITORY}"
@@ -321,7 +339,13 @@ stage_maven:service:
   before_script:
     - eval "$(mise activate bash --quiet)"
   script:
+    - |
+      if [ -f ./release.env ]; then
+        . ./release.env
+      fi
+    - *resolve_component_version
     - export VERSION="$NEXT_VERSION"
+    - '[ -n "$VERSION" ] || { echo "ERROR: VERSION is empty for service!" >&2; exit 1; }'
     - bazel build --config=ci "//virtumic-service:dist_maven"
     - rm -rf "${JRELEASER_STAGING_REPOSITORY}" && mkdir -p "${JRELEASER_STAGING_REPOSITORY}"
     - unzip -o "bazel-bin/virtumic-service/dist_maven.zip" -d "${JRELEASER_STAGING_REPOSITORY}"
@@ -352,6 +376,11 @@ publish_maven:core:
   before_script:
     - eval "$(mise activate bash --quiet)"
   script:
+    - |
+      if [ -f ./release.env ]; then
+        . ./release.env
+      fi
+    - *resolve_component_version
     - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
     - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
     - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
@@ -384,6 +413,11 @@ publish_maven:service:
   before_script:
     - eval "$(mise activate bash --quiet)"
   script:
+    - |
+      if [ -f ./release.env ]; then
+        . ./release.env
+      fi
+    - *resolve_component_version
     - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
     - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
     - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
