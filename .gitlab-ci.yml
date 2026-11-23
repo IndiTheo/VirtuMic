@@ -111,7 +111,6 @@ stages:
       allow_failure: false
 
 
-
 .tag_push: &tag_push
   - |
     git config user.name "Release Bot"
@@ -359,6 +358,7 @@ stage_maven:service:
 .publish_maven_base:
   extends: .release_base
   stage: release
+  image: jreleaser/jreleaser-slim:v1.27.0
   resource_group: "release-$COMPONENT"
   variables:
     JRELEASER_GPG_PUBLIC_KEY: "$GPG_PUBLIC_KEY"
@@ -367,8 +367,6 @@ stage_maven:service:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
-  before_script:
-    - eval "$(mise activate bash --quiet)"
   script:
     - |
       if [ -f ./release.env ]; then
