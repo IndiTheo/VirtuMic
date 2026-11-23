@@ -80,7 +80,7 @@ load("@version//:version.bzl", "VERSION")
 # Metadata generator producing the .pom file with transitive dependencies
 java_export(
     name = "virtumic-core-maven",
-    maven_coordinates = "com.indidevs.android.virtumic:virtumic-core:%s" % VERSION,
+    maven_coordinates = "com.indidevs.android.virtumic:core:%s" % VERSION,
     exports = [":virtumic-core"],
     pom_template = "//virtumic-core:pom.tmpl",
 )
@@ -89,7 +89,7 @@ java_export(
 # Usage: bazel run --config=ci //virtumic-core:publish
 maven_publish(
     name = "publish",
-    coordinates = "com.indidevs.android.virtumic:virtumic-core:%s" % VERSION,
+    coordinates = "com.indidevs.android.virtumic:core:%s" % VERSION,
     artifact = ":virtumic-core.aar",
     pom = ":virtumic-core-maven-pom",
 )
@@ -103,12 +103,12 @@ pkg_files(
         ":virtumic-core-maven-maven-source",
         ":virtumic-core-maven-docs",
     ],
-    prefix = "com/indidevs/android/virtumic/virtumic-core/%s" % VERSION,
+    prefix = "com/indidevs/android/virtumic/core/%s" % VERSION,
     renames = {
-        ":virtumic-core.aar": "virtumic-core-%s.aar" % VERSION,
-        ":virtumic-core-maven-pom": "virtumic-core-%s.pom" % VERSION,
-        ":virtumic-core-maven-maven-source": "virtumic-core-%s-sources.jar" % VERSION,
-        ":virtumic-core-maven-docs": "virtumic-core-%s-javadoc.jar" % VERSION,
+        ":virtumic-core.aar": "core-%s.aar" % VERSION,
+        ":virtumic-core-maven-pom": "core-%s.pom" % VERSION,
+        ":virtumic-core-maven-maven-source": "core-%s-sources.jar" % VERSION,
+        ":virtumic-core-maven-docs": "core-%s-javadoc.jar" % VERSION,
     },
 )
 

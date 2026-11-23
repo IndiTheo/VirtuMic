@@ -113,7 +113,7 @@ load("@version//:version.bzl", "VERSION")
 # Metadata generator producing the .pom file with transitive dependencies
 java_export(
     name = "virtumic-service-maven",
-    maven_coordinates = "com.indidevs.android.virtumic:virtumic-service:%s" % VERSION,
+    maven_coordinates = "com.indidevs.android.virtumic:service:%s" % VERSION,
     exports = [":virtumic-service"],
     pom_template = "//virtumic-service:pom.tmpl",
 )
@@ -122,7 +122,7 @@ java_export(
 # Usage: bazel run --config=ci //virtumic-service:publish
 maven_publish(
     name = "publish",
-    coordinates = "com.indidevs.android.virtumic:virtumic-service:%s" % VERSION,
+    coordinates = "com.indidevs.android.virtumic:service:%s" % VERSION,
     artifact = ":virtumic-service.aar",
     pom = ":virtumic-service-maven-pom",
 )
@@ -136,12 +136,12 @@ pkg_files(
         ":virtumic-service-maven-maven-source",
         ":virtumic-service-maven-docs",
     ],
-    prefix = "com/indidevs/android/virtumic/virtumic-service/%s" % VERSION,
+    prefix = "com/indidevs/android/virtumic/service/%s" % VERSION,
     renames = {
-        ":virtumic-service.aar": "virtumic-service-%s.aar" % VERSION,
-        ":virtumic-service-maven-pom": "virtumic-service-%s.pom" % VERSION,
-        ":virtumic-service-maven-maven-source": "virtumic-service-%s-sources.jar" % VERSION,
-        ":virtumic-service-maven-docs": "virtumic-service-%s-javadoc.jar" % VERSION,
+        ":virtumic-service.aar": "service-%s.aar" % VERSION,
+        ":virtumic-service-maven-pom": "service-%s.pom" % VERSION,
+        ":virtumic-service-maven-maven-source": "service-%s-sources.jar" % VERSION,
+        ":virtumic-service-maven-docs": "service-%s-javadoc.jar" % VERSION,
     },
 )
 
