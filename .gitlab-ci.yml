@@ -23,15 +23,6 @@ workflow:
     - if: $CI_COMMIT_TAG =~ /^core-v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/
     - if: $CI_COMMIT_TAG =~ /^service-v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/
 
-cache:
-  key:
-    files:
-      - MODULE.bazel.lock
-    prefix: bazel-cache
-  paths:
-    - .bazel-cache/
-    - .bazel-repo-cache/
-
 stages:
   - infra
   - lint
@@ -42,6 +33,19 @@ stages:
   - release
 
 # --- BASE TEMPLATES & ANCHORS ---
+
+.bazel_cache:
+  variables:
+    BAZEL_CACHE_POLICY: "pull-push"
+  cache:
+    key:
+      files:
+        - MODULE.bazel.lock
+      prefix: bazel-cache
+    paths:
+      - .bazel-cache/
+      - .bazel-repo-cache/
+    policy: $BAZEL_CACHE_POLICY
 
 .core_changes: &core_changes
   - virtumic-core/**/*
@@ -70,6 +74,7 @@ stages:
   - ".gitlab-ci.yml"
 
 .build_base:
+  extends: .bazel_cache
   stage: build
   image: $CI_BASE_IMAGE
   variables:

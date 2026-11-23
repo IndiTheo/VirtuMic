@@ -7,8 +7,11 @@
   - "**/MODULE.bazel"
 
 code_lint:
+  extends: .bazel_cache
   stage: lint
   image: $CI_BASE_IMAGE
+  variables:
+    BAZEL_CACHE_POLICY: "pull"
   script:
     - eval "$(mise activate bash --quiet)"
     - bazel run --config=ci //:lint
@@ -21,6 +24,13 @@ code_lint:
 commit_lint:
   stage: lint
   image: node:alpine
+  cache:
+    key:
+      files:
+        - ci/commitlint.config.js
+      prefix: npm-commitlint
+    paths:
+      - ~/.npm
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   before_script:
