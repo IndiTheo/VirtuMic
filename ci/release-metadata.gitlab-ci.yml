@@ -1,23 +1,44 @@
+# Shared helper function anchors for git-cliff args and semver tag resolution
+.resolve_tag_func: &resolve_tag_func |
+  get_cliff_args() {
+    local COMP="$1"
+    CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMP}/**" --tag-pattern "${COMP}-v[0-9]*")
+  }
+
+  resolve_component_tag() {
+    local COMP="$1"
+    local CURRENT_TAG="${2-$(git tag -l "${COMP}-v*" --sort=-v:refname | head -n 1)}"
+
+    get_cliff_args "$COMP"
+    local TAG_NAME
+    if [ -z "$CURRENT_TAG" ]; then
+      TAG_NAME="${COMP}-v0.1.0"
+      [ -n "${PRE_RELEASE:-}" ] && TAG_NAME="${TAG_NAME}-${PRE_RELEASE}.0"
+    else
+      local BUMPED
+      BUMPED=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version)
+      if [ -n "${PRE_RELEASE:-}" ]; then
+        local CLEAN_BUMPED="${BUMPED%%-${PRE_RELEASE}*}"
+        local COUNT
+        COUNT=$(git tag -l "${CLEAN_BUMPED}-${PRE_RELEASE}.*" | wc -l)
+        TAG_NAME="${CLEAN_BUMPED}-${PRE_RELEASE}.$COUNT"
+      else
+        TAG_NAME="$BUMPED"
+      fi
+    fi
+    echo "$TAG_NAME"
+  }
+
+
 # Resolve single component metadata
 # Evaluates git-cliff for a single component and exports tag name and next version
 .cliff_resolve:
   script:
+    - *resolve_tag_func
     - |
-      CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMPONENT}/**" --tag-pattern "${COMPONENT}-v[0-9]*")
-      if [ -z "$(git tag -l "${COMPONENT}-v*")" ]; then
-        TAG_NAME="${COMPONENT}-v0.1.0"
-        [ -n "${PRE_RELEASE:-}" ] && TAG_NAME="${TAG_NAME}-${PRE_RELEASE}.0"
-      else
-        BUMPED=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version)
-        if [ -n "${PRE_RELEASE:-}" ]; then
-          CLEAN_BUMPED="${BUMPED%%-${PRE_RELEASE}*}"
-          COUNT=$(git tag -l "${CLEAN_BUMPED}-${PRE_RELEASE}.*" | wc -l)
-          TAG_NAME="${CLEAN_BUMPED}-${PRE_RELEASE}.$((COUNT + 1))"
-        else
-          TAG_NAME="$BUMPED"
-        fi
-      fi
+      TAG_NAME=$(resolve_component_tag "$COMPONENT")
       NEXT_VERSION="${TAG_NAME#"${COMPONENT}-v"}"
+      get_cliff_args "$COMPONENT"
       DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME")
 
       if [ -z "$DESCRIPTION" ]; then
@@ -85,6 +106,7 @@ bootstrap_metadata:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
     - eval "$(mise activate bash --quiet)"
+    - *resolve_tag_func
     - |
       rm -f release.env
       mkdir -p dist
@@ -99,26 +121,13 @@ bootstrap_metadata:
           CURRENT_VER="${CURRENT_TAG#"${COMP}-v"}"
         fi
 
-        CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMP}/**" --tag-pattern "${COMP}-v[0-9]*")
-        if [ -z "$CURRENT_TAG" ]; then
-          TAG_NAME="${COMP}-v0.1.0"
-          [ -n "${PRE_RELEASE:-}" ] && TAG_NAME="${TAG_NAME}-${PRE_RELEASE}.0"
-        else
-          BUMPED=$(git-cliff "${CLIFF_ARGS[@]}" --bumped-version 2>/dev/null || echo "$CURRENT_TAG")
-          if [ -n "${PRE_RELEASE:-}" ]; then
-            CLEAN_BUMPED="${BUMPED%%-${PRE_RELEASE}*}"
-            COUNT=$(git tag -l "${CLEAN_BUMPED}-${PRE_RELEASE}.*" | wc -l)
-            TAG_NAME="${CLEAN_BUMPED}-${PRE_RELEASE}.$((COUNT + 1))"
-          else
-            TAG_NAME="$BUMPED"
-          fi
-        fi
+        TAG_NAME=$(resolve_component_tag "$COMP" "$CURRENT_TAG" 2>/dev/null || echo "$CURRENT_TAG")
         NEXT_VER="${TAG_NAME#"${COMP}-v"}"
 
-        eval "${COMP_UPPER}_CURRENT_TAG='$CURRENT_TAG'"
-        eval "${COMP_UPPER}_CURRENT_VER='$CURRENT_VER'"
-        eval "${COMP_UPPER}_NEXT_TAG_NAME='$TAG_NAME'"
-        eval "${COMP_UPPER}_NEXT_VER='$NEXT_VER'"
+        declare "${COMP_UPPER}_CURRENT_TAG=$CURRENT_TAG"
+        declare "${COMP_UPPER}_CURRENT_VER=$CURRENT_VER"
+        declare "${COMP_UPPER}_NEXT_TAG_NAME=$TAG_NAME"
+        declare "${COMP_UPPER}_NEXT_VER=$NEXT_VER"
 
         # Export versions to release.env for GitLab CI dotenv reports
         echo "${COMP_UPPER}_CURRENT_TAG=$CURRENT_TAG" >> release.env
@@ -133,7 +142,7 @@ bootstrap_metadata:
         TAG_VAR="${COMP_UPPER}_NEXT_TAG_NAME"
         TAG_NAME="${!TAG_VAR}"
 
-        CLIFF_ARGS=(--config ci/cliff.toml --include-path "virtumic-${COMP}/**" --tag-pattern "${COMP}-v[0-9]*")
+        get_cliff_args "$COMP"
         DESCRIPTION=$(git-cliff "${CLIFF_ARGS[@]}" --unreleased --tag "$TAG_NAME" 2>/dev/null || echo "Release $TAG_NAME")
 
         UPSTREAM_DEPS=()
