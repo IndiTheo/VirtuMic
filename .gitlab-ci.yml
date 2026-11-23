@@ -454,6 +454,22 @@ publish_maven:service:
     - export JRELEASER_GPG_PASSPHRASE="$GPG_PASSPHRASE"
     - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
     - jreleaser deploy --config-file ci/jreleaser.yml
+    - |
+      MAVEN_CENTRAL_BASE_URL="https://central.sonatype.com/artifact/com.indidevs.android.virtumic/virtumic-${COMPONENT}"
+      MAVEN_CENTRAL_URL="${MAVEN_CENTRAL_BASE_URL}/${NEXT_VERSION}"
+
+      jq -n --arg name "Maven Central Artifact" --arg url "$MAVEN_CENTRAL_URL" --arg link_type "package" \
+        '[{name: $name, url: $url, link_type: $link_type}]' > dist/asset_links.json
+
+      SAFE_VERSION="${NEXT_VERSION//-/--}"
+      BADGE_HEADER="[![Release](https://img.shields.io/badge/Release-v${SAFE_VERSION}-blue)](${MAVEN_CENTRAL_URL}) [![Latest](https://img.shields.io/maven-central/v/com.indidevs.android.virtumic/virtumic-${COMPONENT}?label=Latest)](${MAVEN_CENTRAL_BASE_URL})"
+      BADGE_HEADER="${BADGE_HEADER}"$'\n\n'"[View Version ${NEXT_VERSION} on Maven Central](${MAVEN_CENTRAL_URL})"$'\n\n'
+
+      NOTES_FILE="dist/release_notes_${COMPONENT}.md"
+      if [ -f "$NOTES_FILE" ]; then
+        ORIG_NOTES=$(cat "$NOTES_FILE")
+        printf '%s%s\n' "$BADGE_HEADER" "$ORIG_NOTES" > "$NOTES_FILE"
+      fi
 
     - *tag_push
 
