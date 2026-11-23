@@ -368,7 +368,7 @@ stage_maven:service:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
   before_script:
-    - apk add --no-cache jq
+    - apt-get update && apt-get install -y --no-install-recommends jq
   script:
     - |
       if [ -f ./release.env ]; then
