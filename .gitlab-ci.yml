@@ -44,6 +44,7 @@ stages:
       TAG_NAME="${!TAG_VAR:-${TAG_NAME:-}}"
       export NEXT_VERSION TAG_NAME
     fi
+    [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "0.0.0" ] || { echo "ERROR: Invalid or empty NEXT_VERSION ($NEXT_VERSION) for $COMPONENT!" >&2; exit 1; }
 
 .bazel_cache:
   variables:
