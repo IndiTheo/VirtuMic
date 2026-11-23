@@ -29,7 +29,7 @@ deploy:
         active: RELEASE
         url: https://central.sonatype.com/api/v1/publisher
         stagingRepositories:
-          - "{{Env.JRELEASER_STAGING_REPOSITORY}}"
+          - build/staging-deploy
         verifyPom: false
     nexus2:
       sonatype-snapshot:
@@ -40,5 +40,5 @@ deploy:
         closeRepository: true
         releaseRepository: true
         stagingRepositories:
-          - "{{Env.JRELEASER_STAGING_REPOSITORY}}"
+          - build/staging-deploy
         verifyPom: false

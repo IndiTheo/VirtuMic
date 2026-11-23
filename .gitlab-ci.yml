@@ -295,7 +295,7 @@ stage_maven:core:
   stage: release
   variables:
     COMPONENT: "core"
-    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy-core"
+    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy"
   needs:
     - job: build_library:core
       artifacts: true
@@ -320,7 +320,7 @@ stage_maven:core:
   artifacts:
     name: "staging-core-${CI_COMMIT_REF_NAME}"
     paths:
-      - build/staging-deploy-core
+      - build/staging-deploy
     expire_in: 1 day
 
 stage_maven:service:
@@ -328,7 +328,7 @@ stage_maven:service:
   stage: release
   variables:
     COMPONENT: "service"
-    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy-service"
+    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy"
   needs:
     - job: build_library:service
       artifacts: true
@@ -353,82 +353,69 @@ stage_maven:service:
   artifacts:
     name: "staging-service-${CI_COMMIT_REF_NAME}"
     paths:
-      - build/staging-deploy-service
+      - build/staging-deploy
     expire_in: 1 day
 
-publish_maven:core:
+.publish_maven_base:
   extends: .release_base
   stage: release
-  resource_group: "release-core"
+  resource_group: "release-$COMPONENT"
   variables:
-    COMPONENT: "core"
-    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy-core"
     JRELEASER_GPG_PUBLIC_KEY: "$GPG_PUBLIC_KEY"
     JRELEASER_GPG_SECRET_KEY: "$GPG_SECRET_KEY"
     JRELEASER_GPG_PASSPHRASE: "$GPG_PASSPHRASE"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  before_script:
+    - eval "$(mise activate bash --quiet)"
+  script:
+    - |
+      if [ -f ./release.env ]; then
+        . ./release.env
+      fi
+    - *resolve_component_version
+    - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
+    - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
+    - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
+    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
+    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
+    - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
+    - export JRELEASER_GPG_PUBLIC_KEY=$(echo "$JRELEASER_GPG_PUBLIC_KEY" | base64 -d)
+    - export JRELEASER_GPG_SECRET_KEY=$(echo "$JRELEASER_GPG_SECRET_KEY" | base64 -d)
+    - export JRELEASER_GPG_PASSPHRASE="$GPG_PASSPHRASE"
+    - jreleaser deploy --basedir . --config-file ci/jreleaser.yml
+    - |
+      MAVEN_CENTRAL_BASE_URL="https://central.sonatype.com/artifact/com.indidevs.android.virtumic/virtumic-${COMPONENT}"
+      MAVEN_CENTRAL_URL="${MAVEN_CENTRAL_BASE_URL}/${NEXT_VERSION}"
+      echo "MAVEN_CENTRAL_BASE_URL=${MAVEN_CENTRAL_BASE_URL}" > maven.env
+      echo "MAVEN_CENTRAL_URL=${MAVEN_CENTRAL_URL}" >> maven.env
+  artifacts:
+    reports:
+      dotenv: maven.env
+    paths:
+      - maven.env
+    expire_in: 1 day
+
+publish_maven:core:
+  extends: .publish_maven_base
+  variables:
+    COMPONENT: "core"
   needs:
     - job: stage_maven:core
       artifacts: true
     - job: bootstrap_metadata
       artifacts: true
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-  before_script:
-    - eval "$(mise activate bash --quiet)"
-  script:
-    - |
-      if [ -f ./release.env ]; then
-        . ./release.env
-      fi
-    - *resolve_component_version
-    - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
-    - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
-    - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
-    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
-    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
-    - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
-    - export JRELEASER_GPG_PUBLIC_KEY=$(echo "$JRELEASER_GPG_PUBLIC_KEY" | base64 -d)
-    - export JRELEASER_GPG_SECRET_KEY=$(echo "$JRELEASER_GPG_SECRET_KEY" | base64 -d)
-    - jreleaser deploy --config-file ci/jreleaser.yml
-    - *tag_push
 
 publish_maven:service:
-  extends: .release_base
-  stage: release
-  resource_group: "release-service"
+  extends: .publish_maven_base
   variables:
     COMPONENT: "service"
-    JRELEASER_STAGING_REPOSITORY: "build/staging-deploy-service"
-    JRELEASER_GPG_PUBLIC_KEY: "$GPG_PUBLIC_KEY"
-    JRELEASER_GPG_SECRET_KEY: "$GPG_SECRET_KEY"
-    JRELEASER_GPG_PASSPHRASE: "$GPG_PASSPHRASE"
   needs:
     - job: stage_maven:service
       artifacts: true
     - job: bootstrap_metadata
       artifacts: true
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-  before_script:
-    - eval "$(mise activate bash --quiet)"
-  script:
-    - |
-      if [ -f ./release.env ]; then
-        . ./release.env
-      fi
-    - *resolve_component_version
-    - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
-    - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
-    - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
-    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
-    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
-    - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
-    - export JRELEASER_GPG_PUBLIC_KEY=$(echo "$JRELEASER_GPG_PUBLIC_KEY" | base64 -d)
-    - export JRELEASER_GPG_SECRET_KEY=$(echo "$JRELEASER_GPG_SECRET_KEY" | base64 -d)
-    - jreleaser deploy --basedir . --config-file ci/jreleaser.yml
-    - *tag_push
 
 # --- RELEASE JOBS ---
 
@@ -456,62 +443,7 @@ publish_maven:service:
     - echo "--- Changelog Preview End ---"
 
 
-.release_maven_base:
-  extends: .release_base
-  resource_group: "release-$COMPONENT"
-  script:
-    - eval "$(mise activate bash --quiet)"
-    - echo "Releasing $TAG_NAME..."
 
-    # Build Bazel Maven distribution zip
-    - export VERSION="$NEXT_VERSION"
-    - bazel build --config=ci "//virtumic-${COMPONENT}:dist_maven"
-
-    # Unpack isolated staging deploy for JReleaser (collision-proof)
-    - export JRELEASER_STAGING_REPOSITORY="build/staging-deploy-${COMPONENT}"
-    - rm -rf "${JRELEASER_STAGING_REPOSITORY}" && mkdir -p "${JRELEASER_STAGING_REPOSITORY}"
-    - unzip -q -o "bazel-bin/virtumic-${COMPONENT}/dist_maven.zip" -d "${JRELEASER_STAGING_REPOSITORY}"
-
-    # Publish internally to GitLab Package Registry
-    - export MAVEN_REPO="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven"
-    - export MAVEN_USER="gitlab-ci-token"
-    - export MAVEN_PASSWORD="${CI_JOB_TOKEN}"
-    - bazel run --config=ci "//virtumic-${COMPONENT}:publish"
-
-    # Deploy to Maven Central via JReleaser
-    - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
-    - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
-    - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
-    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
-    - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
-    - |
-      if [ -n "${GPG_PUBLIC_KEY:-}" ]; then
-        export JRELEASER_GPG_PUBLIC_KEY=$(echo "$GPG_PUBLIC_KEY" | base64 -d)
-      fi
-      if [ -n "${GPG_SECRET_KEY:-}" ]; then
-        export JRELEASER_GPG_SECRET_KEY=$(echo "$GPG_SECRET_KEY" | base64 -d)
-      fi
-    - export JRELEASER_GPG_PASSPHRASE="$GPG_PASSPHRASE"
-    - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
-    - jreleaser deploy --config-file ci/jreleaser.yml
-    - |
-      MAVEN_CENTRAL_BASE_URL="https://central.sonatype.com/artifact/com.indidevs.android.virtumic/virtumic-${COMPONENT}"
-      MAVEN_CENTRAL_URL="${MAVEN_CENTRAL_BASE_URL}/${NEXT_VERSION}"
-
-      jq -n --arg name "Maven Central Artifact" --arg url "$MAVEN_CENTRAL_URL" --arg link_type "package" \
-        '[{name: $name, url: $url, link_type: $link_type}]' > dist/asset_links.json
-
-      SAFE_VERSION="${NEXT_VERSION//-/--}"
-      BADGE_HEADER="[![Release](https://img.shields.io/badge/Release-v${SAFE_VERSION}-blue)](${MAVEN_CENTRAL_URL}) [![Latest](https://img.shields.io/maven-central/v/com.indidevs.android.virtumic/virtumic-${COMPONENT}?label=Latest)](${MAVEN_CENTRAL_BASE_URL})"
-      BADGE_HEADER="${BADGE_HEADER}"$'\n\n'"[View Version ${NEXT_VERSION} on Maven Central](${MAVEN_CENTRAL_URL})"$'\n\n'
-
-      NOTES_FILE="dist/release_notes_${COMPONENT}.md"
-      if [ -f "$NOTES_FILE" ]; then
-        ORIG_NOTES=$(cat "$NOTES_FILE")
-        printf '%s%s\n' "$BADGE_HEADER" "$ORIG_NOTES" > "$NOTES_FILE"
-      fi
-
-    - *tag_push
 
 release:app:
   extends: .release_base
@@ -615,25 +547,7 @@ preview:app:
 
 # --- RELEASE JOBS ---
 
-release:core:
-  extends: .release_maven_base
-  variables:
-    COMPONENT: "core"
-  needs:
-    - job: bootstrap_metadata
-      artifacts: true
-    - job: build_library:core
-      artifacts: true
 
-release:service:
-  extends: .release_maven_base
-  variables:
-    COMPONENT: "service"
-  needs:
-    - job: bootstrap_metadata
-      artifacts: true
-    - job: build_library:service
-      artifacts: true
 
 .release_github_base:
   extends: .release_base
@@ -702,3 +616,61 @@ release:github:service:
       artifacts: true
     - job: build_library:service
       artifacts: true
+
+.release_library_base:
+  extends: .release_base
+  stage: release
+  resource_group: "release-$COMPONENT"
+  script:
+    - eval "$(mise activate bash --quiet)"
+    - |
+      if [ -f ./release.env ]; then
+        . ./release.env
+      fi
+    - *resolve_component_version
+    - echo "Finalizing release and tagging $TAG_NAME..."
+    - |
+      [ -n "${MAVEN_CENTRAL_BASE_URL:-}" ] || MAVEN_CENTRAL_BASE_URL="https://central.sonatype.com/artifact/com.indidevs.android.virtumic/virtumic-${COMPONENT}"
+      [ -n "${MAVEN_CENTRAL_URL:-}" ] || MAVEN_CENTRAL_URL="${MAVEN_CENTRAL_BASE_URL}/${NEXT_VERSION}"
+
+      mkdir -p dist
+      jq -n --arg name "Maven Central Artifact" --arg url "$MAVEN_CENTRAL_URL" --arg link_type "package" \
+        '[{name: $name, url: $url, link_type: $link_type}]' > dist/asset_links.json
+
+      SAFE_VERSION="${NEXT_VERSION//-/--}"
+      BADGE_HEADER="[![Release](https://img.shields.io/badge/Release-v${SAFE_VERSION}-blue)](${MAVEN_CENTRAL_URL}) [![Latest](https://img.shields.io/maven-central/v/com.indidevs.android.virtumic/virtumic-${COMPONENT}?label=Latest)](${MAVEN_CENTRAL_BASE_URL})"
+      BADGE_HEADER="${BADGE_HEADER}"$'\n\n'"[View Version ${NEXT_VERSION} on Maven Central](${MAVEN_CENTRAL_URL})"$'\n\n'
+
+      NOTES_FILE="dist/release_notes_${COMPONENT}.md"
+      if [ -f "$NOTES_FILE" ]; then
+        ORIG_NOTES=$(cat "$NOTES_FILE")
+        printf '%s%s\n' "$BADGE_HEADER" "$ORIG_NOTES" > "$NOTES_FILE"
+      fi
+
+    - *tag_push
+
+release:core:
+  extends: .release_library_base
+  variables:
+    COMPONENT: "core"
+  needs:
+    - job: publish_maven:core
+      artifacts: true
+    - job: bootstrap_metadata
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+
+release:service:
+  extends: .release_library_base
+  variables:
+    COMPONENT: "service"
+  needs:
+    - job: publish_maven:service
+      artifacts: true
+    - job: bootstrap_metadata
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
