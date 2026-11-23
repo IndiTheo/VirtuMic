@@ -427,7 +427,7 @@ publish_maven:service:
     - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
     - export JRELEASER_GPG_PUBLIC_KEY=$(echo "$JRELEASER_GPG_PUBLIC_KEY" | base64 -d)
     - export JRELEASER_GPG_SECRET_KEY=$(echo "$JRELEASER_GPG_SECRET_KEY" | base64 -d)
-    - jreleaser deploy --config-file ci/jreleaser.yml
+    - jreleaser deploy --basedir . --config-file ci/jreleaser.yml
     - *tag_push
 
 # --- RELEASE JOBS ---
