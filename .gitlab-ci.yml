@@ -385,12 +385,27 @@ stage_maven:service:
       MAVEN_CENTRAL_URL="${MAVEN_CENTRAL_BASE_URL}/${NEXT_VERSION}"
       echo "MAVEN_CENTRAL_BASE_URL=${MAVEN_CENTRAL_BASE_URL}" > maven.env
       echo "MAVEN_CENTRAL_URL=${MAVEN_CENTRAL_URL}" >> maven.env
+
+      mkdir -p dist
+      jq -n --arg name "Maven Central Artifact" --arg url "$MAVEN_CENTRAL_URL" --arg link_type "package" \
+        '[{name: $name, url: $url, link_type: $link_type}]' > dist/asset_links.json
+
+      SAFE_VERSION="${NEXT_VERSION//-/--}"
+      BADGE_HEADER="[![Release](https://img.shields.io/badge/Release-v${SAFE_VERSION}-blue)](${MAVEN_CENTRAL_URL}) [![Latest](https://img.shields.io/maven-central/v/com.indidevs.android.virtumic/${COMPONENT}?label=Latest)](${MAVEN_CENTRAL_BASE_URL})"
+      BADGE_HEADER="${BADGE_HEADER}"$'\n\n'"[View Version ${NEXT_VERSION} on Maven Central](${MAVEN_CENTRAL_URL})"$'\n\n'
+
+      NOTES_FILE="dist/release_notes_${COMPONENT}.md"
+      if [ -f "$NOTES_FILE" ]; then
+        ORIG_NOTES=$(cat "$NOTES_FILE")
+        printf '%s%s\n' "$BADGE_HEADER" "$ORIG_NOTES" > "$NOTES_FILE"
+      fi
   artifacts:
     when: always
     reports:
       dotenv: maven.env
     paths:
       - maven.env
+      - dist/
       - out/jreleaser/trace.log
     expire_in: 1 day
 
@@ -589,9 +604,9 @@ release:github:app:
   variables:
     COMPONENT: "app"
   needs:
-    - job: bootstrap_metadata
+    - job: release:app
       artifacts: true
-    - job: sign:app
+    - job: bootstrap_metadata
       artifacts: true
 
 release:github:core:
@@ -599,9 +614,9 @@ release:github:core:
   variables:
     COMPONENT: "core"
   needs:
-    - job: bootstrap_metadata
+    - job: publish_maven:core
       artifacts: true
-    - job: build_library:core
+    - job: bootstrap_metadata
       artifacts: true
 
 release:github:service:
@@ -609,9 +624,9 @@ release:github:service:
   variables:
     COMPONENT: "service"
   needs:
-    - job: bootstrap_metadata
+    - job: publish_maven:service
       artifacts: true
-    - job: build_library:service
+    - job: bootstrap_metadata
       artifacts: true
 
 .release_library_base:
@@ -626,24 +641,6 @@ release:github:service:
       fi
     - *resolve_component_version
     - echo "Finalizing release and tagging $TAG_NAME..."
-    - |
-      [ -n "${MAVEN_CENTRAL_BASE_URL:-}" ] || MAVEN_CENTRAL_BASE_URL="https://central.sonatype.com/artifact/com.indidevs.android.virtumic/${COMPONENT}"
-      [ -n "${MAVEN_CENTRAL_URL:-}" ] || MAVEN_CENTRAL_URL="${MAVEN_CENTRAL_BASE_URL}/${NEXT_VERSION}"
-
-      mkdir -p dist
-      jq -n --arg name "Maven Central Artifact" --arg url "$MAVEN_CENTRAL_URL" --arg link_type "package" \
-        '[{name: $name, url: $url, link_type: $link_type}]' > dist/asset_links.json
-
-      SAFE_VERSION="${NEXT_VERSION//-/--}"
-      BADGE_HEADER="[![Release](https://img.shields.io/badge/Release-v${SAFE_VERSION}-blue)](${MAVEN_CENTRAL_URL}) [![Latest](https://img.shields.io/maven-central/v/com.indidevs.android.virtumic/${COMPONENT}?label=Latest)](${MAVEN_CENTRAL_BASE_URL})"
-      BADGE_HEADER="${BADGE_HEADER}"$'\n\n'"[View Version ${NEXT_VERSION} on Maven Central](${MAVEN_CENTRAL_URL})"$'\n\n'
-
-      NOTES_FILE="dist/release_notes_${COMPONENT}.md"
-      if [ -f "$NOTES_FILE" ]; then
-        ORIG_NOTES=$(cat "$NOTES_FILE")
-        printf '%s%s\n' "$BADGE_HEADER" "$ORIG_NOTES" > "$NOTES_FILE"
-      fi
-
     - *tag_push
 
 release:core:
