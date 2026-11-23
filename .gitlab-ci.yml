@@ -374,25 +374,24 @@ stage_maven:service:
       fi
     - *resolve_component_version
     - export JRELEASER_PROJECT_VERSION="$NEXT_VERSION"
-    - export JRELEASER_MAVENCENTRAL_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
-    - export JRELEASER_MAVENCENTRAL_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
+    - export JRELEASER_GPG_PUBLIC_KEY=$(echo "$GPG_PUBLIC_KEY" | base64 -d)
+    - export JRELEASER_GPG_SECRET_KEY=$(echo "$GPG_SECRET_KEY" | base64 -d)
+    - export JRELEASER_GPG_PASSPHRASE=$(echo "$GPG_PASSPHRASE" | base64 -d)
     - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_USERNAME="$JRELEASER_MAVENCENTRAL_USERNAME"
     - export JRELEASER_NEXUS2_SONATYPE_SNAPSHOT_PASSWORD="$JRELEASER_MAVENCENTRAL_PASSWORD"
-    - export JRELEASER_MAVENCENTRAL_STAGE="UPLOAD"
-    - export JRELEASER_GPG_PUBLIC_KEY=$(echo "$JRELEASER_GPG_PUBLIC_KEY" | base64 -d)
-    - export JRELEASER_GPG_SECRET_KEY=$(echo "$JRELEASER_GPG_SECRET_KEY" | base64 -d)
-    - export JRELEASER_GPG_PASSPHRASE="$GPG_PASSPHRASE"
-    - jreleaser deploy --basedir . --config-file ci/jreleaser.yml
+    - JRELEASER_MAVENCENTRAL_STAGE=UPLOAD jreleaser deploy --basedir . --config-file ci/jreleaser.yml
     - |
       MAVEN_CENTRAL_BASE_URL="https://central.sonatype.com/artifact/com.indidevs.android.virtumic/virtumic-${COMPONENT}"
       MAVEN_CENTRAL_URL="${MAVEN_CENTRAL_BASE_URL}/${NEXT_VERSION}"
       echo "MAVEN_CENTRAL_BASE_URL=${MAVEN_CENTRAL_BASE_URL}" > maven.env
       echo "MAVEN_CENTRAL_URL=${MAVEN_CENTRAL_URL}" >> maven.env
   artifacts:
+    when: always
     reports:
       dotenv: maven.env
     paths:
       - maven.env
+      - out/jreleaser/trace.log
     expire_in: 1 day
 
 publish_maven:core:
