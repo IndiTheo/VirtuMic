@@ -103,8 +103,11 @@ stages:
     name: "release-${COMPONENT}-${CI_COMMIT_REF_NAME}"
     paths:
       - dist/release_notes_*.md
+      - out/jreleaser/
+      - ci/out/jreleaser/
     reports:
       dotenv: release.env
+    when: always
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
