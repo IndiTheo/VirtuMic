@@ -571,6 +571,11 @@ preview:app:
   script:
     - eval "$(mise activate bash --quiet)"
     - |
+      if [ -f ./release.env ]; then
+        . ./release.env
+      fi
+    - *resolve_component_version
+    - |
       if [ -z "${GH_TOKEN:-}" ] || [ -z "${GITHUB_REPOSITORY:-}" ]; then
         echo "ERROR: GH_TOKEN or GITHUB_REPOSITORY variable is missing!"
         exit 1
