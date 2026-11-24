@@ -1,6 +1,4 @@
 [changelog]
-header = ""
-footer = ""
 trim = true
 body = """
 {%- set parts = version | split(pat="-v") -%}
