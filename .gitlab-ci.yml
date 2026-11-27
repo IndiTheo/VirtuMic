@@ -80,7 +80,7 @@ sync_bazel_lockfiles:
       - .bazel-repo-cache/
     policy: pull-push
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate\//'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate/'
       changes:
         - MODULE.bazel
   script:
