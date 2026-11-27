@@ -101,8 +101,10 @@ maven.install(
         "androidx.test:monitor:1.7.2",
         "androidx.test.ext:junit:1.2.1",
         # THIRD-PARTY
-        "com.indidevs.android:shellom:0.1.0-beta-1",
+        "com.indidevs.android:shellom:0.2.0-beta-1",
         "com.indidevs.android:adbeesh:0.1.0-beta-2",
+        "dev.rikka.shizuku:api:13.1.5",
+        "dev.rikka.shizuku:provider:13.1.5",
         "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2",
         "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2",
         "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2",

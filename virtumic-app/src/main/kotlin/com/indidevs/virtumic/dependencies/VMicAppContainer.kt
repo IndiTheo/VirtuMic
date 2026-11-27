@@ -3,6 +3,7 @@ package com.indidevs.virtumic.dependencies
 import android.content.Context
 import com.indidevs.android.adbeesh.config.AdbSessionConfig
 import com.indidevs.android.privilegehub.providers.AdbPrivilegeProvider
+import com.indidevs.android.privilegehub.providers.ShizukuPrivilegeProvider
 import com.indidevs.android.privilegehub.providers.SystemPrivilegeProvider
 import com.indidevs.virtumic.service.session.VMicMediaSessionService
 import kotlinx.coroutines.CoroutineScope
@@ -25,6 +26,15 @@ class VMicAppContainer(
                 .build(),
             requiredPermissions = requiredPermissions,
             priority = 50,
+            scope = scope
+        )
+    }
+
+    val shizukuPrivilegeProvider: ShizukuPrivilegeProvider by lazy {
+        ShizukuPrivilegeProvider(
+            context = context,
+            requiredPermissions = requiredPermissions,
+            priority = 75,
             scope = scope
         )
     }

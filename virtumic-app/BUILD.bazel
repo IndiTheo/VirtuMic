@@ -26,6 +26,8 @@ kt_android_library(
         "//lib/privilege-hub",
         "@android//:com_indidevs_android_adbeesh",
         "@android//:com_indidevs_android_shellom",
+        "@android//:dev_rikka_shizuku_api",
+        "@android//:dev_rikka_shizuku_provider",
         "@security//:org_bouncycastle_bcprov_jdk18on",
         "@security//:org_bouncycastle_bcpkix_jdk18on",
         "@android//:androidx_activity_activity_compose",

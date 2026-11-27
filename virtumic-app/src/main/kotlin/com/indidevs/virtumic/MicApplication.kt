@@ -32,6 +32,7 @@ class MicApplication : Application(), VMicEngineProvider {
         // Register privilege providers
         PrivilegeHub.register(
             appContainer.adbPrivilegeProvider,
+            appContainer.shizukuPrivilegeProvider,
             appContainer.systemPrivilegeProvider
         )
 
