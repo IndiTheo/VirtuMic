@@ -28,11 +28,25 @@
         "/(^|/)MODULE\\.bazel$/"
       ],
       "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+registry=(?<registryUrl>\\S+)\\s*\"(?<depName>[^:\"]+:[^:\"]+):(?<currentValue>[^\"]+)\""
-      ]
+        "(?s)boms\\s*=\\s*\\[.*?\"(?<depName>[^:\"]+:[^:\"]+):(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "maven",
+      "versioningTemplate": "maven"
     }
   ],
   "packageRules": [
+    {
+      "description": "Compose BOM → Google Maven registry",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "androidx.compose:compose-bom"
+      ],
+      "registryUrls": [
+        "https://maven.google.com"
+      ]
+    },
     {
       "description": "Other Maven minor and patch updates together",
       "matchDatasources": [
