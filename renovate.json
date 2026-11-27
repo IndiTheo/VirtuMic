@@ -1,0 +1,84 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "enabledManagers": [
+    "bazel-module",
+    "custom.regex"
+  ],
+  "dependencyDashboard": {
+    "enabled": true
+  },
+  "prConcurrentLimit": 3,
+  "prHourlyLimit": 2,
+  "schedule": [
+    "before 6am on Monday"
+  ],
+  "automerge": false,
+  "rebaseWhen": "behind-base-branch",
+  "gitIgnoredAuthors": [
+    "dependency-updater-bot@indidevs.com"
+  ],
+  "commitMessageLowerCase": "auto",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Maven BOMs in MODULE.bazel",
+      "managerFilePatterns": [
+        "/(^|/)MODULE\\.bazel$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+registry=(?<registryUrl>\\S+)\\s+\"(?<depName>[^:\"]+:[^:\"]+):(?<currentValue>[^\"]+)\""
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Compose BOM and AndroidX together",
+      "matchPackageNames": [
+        "androidx.compose:compose-bom"
+      ],
+      "groupName": "androidx and compose"
+    },
+    {
+      "description": "Kotlin ecosystem together",
+      "matchPackageNames": [
+        "org.jetbrains.kotlin*"
+      ],
+      "groupName": "kotlin ecosystem"
+    },
+    {
+      "description": "Other Maven minor and patch updates together",
+      "matchDatasources": [
+        "maven"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "*",
+        "!androidx.compose:compose-bom",
+        "!org.jetbrains.kotlin*"
+      ],
+      "groupName": "maven minor and patch"
+    },
+    {
+      "description": "Bazel module minor and patch updates together",
+      "matchManagers": [
+        "bazel-module"
+      ],
+      "matchDepTypes": [
+        "bazel_dep"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "bazel modules"
+    }
+  ]
+}
