@@ -35,11 +35,14 @@ stages:
 # Override the official template's stages to match our pipeline
 renovate-config-validator:
   stage: lint
+  image: ghcr.io/renovatebot/renovate:44
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - renovate.json
         - MODULE.bazel
+  script:
+    - renovate-config-validator
 
 renovate:
   stage: infra
