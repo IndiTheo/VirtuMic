@@ -51,7 +51,11 @@ renovate:
     RENOVATE_REPOSITORIES: "$CI_PROJECT_PATH"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-    - if: '$CI_PIPELINE_SOURCE == "web" && $RENOVATE_DRY_RUN == "full"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      variables:
+        RENOVATE_DRY_RUN: "full"
+        RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
+        RENOVATE_CONFIG_FILE: "renovate.json"
 
 # Autofix job: runs on Renovate MRs to regenerate all lockfiles
 # Runs in .pre (before lint/build) so lockfiles are fresh for the MR pipeline
