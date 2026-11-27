@@ -3,7 +3,7 @@
   "__INPUT_ARTIFACTS_HASH": {
     "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable": 212040376,
     "org.jetbrains.kotlin:kotlin-metadata-jvm": -2144688145,
-    "repositories": -285431144
+    "repositories": -1907310712
   },
   "__RESOLVED_ARTIFACTS_HASH": {
     "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable": 412466121,
@@ -138,6 +138,12 @@
       "org.jetbrains:annotations"
     ],
     "https://repo1.maven.org/maven2/": [
+      "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable",
+      "org.jetbrains.kotlin:kotlin-metadata-jvm",
+      "org.jetbrains.kotlin:kotlin-stdlib",
+      "org.jetbrains:annotations"
+    ],
+    "https://repo.maven.apache.org/maven2/": [
       "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable",
       "org.jetbrains.kotlin:kotlin-metadata-jvm",
       "org.jetbrains.kotlin:kotlin-stdlib",

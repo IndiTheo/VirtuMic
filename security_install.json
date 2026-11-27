@@ -3,7 +3,7 @@
   "__INPUT_ARTIFACTS_HASH": {
     "org.bouncycastle:bcpkix-jdk18on": 1954093523,
     "org.bouncycastle:bcprov-jdk18on": 402064210,
-    "repositories": 736830508
+    "repositories": 1664740892
   },
   "__RESOLVED_ARTIFACTS_HASH": {
     "org.bouncycastle:bcpkix-jdk18on": 234366076,
@@ -335,6 +335,11 @@
       "org.bouncycastle:bcutil-jdk18on"
     ],
     "https://repo1.maven.org/maven2/": [
+      "org.bouncycastle:bcpkix-jdk18on",
+      "org.bouncycastle:bcprov-jdk18on",
+      "org.bouncycastle:bcutil-jdk18on"
+    ],
+    "https://repo.maven.apache.org/maven2/": [
       "org.bouncycastle:bcpkix-jdk18on",
       "org.bouncycastle:bcprov-jdk18on",
       "org.bouncycastle:bcutil-jdk18on"

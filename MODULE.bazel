@@ -54,6 +54,7 @@ use_repo(version, "version")
 
 maven.install(
     name = "android",
+    fetch_sources = False,
     boms = [
         "androidx.compose:compose-bom:2026.04.01",
     ],
@@ -114,6 +115,7 @@ maven.install(
     repositories = [
         "https://maven-central.storage-download.googleapis.com/maven2",
         "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
         "https://maven.google.com",
         "https://androidx.dev",
         "https://jitpack.io",
@@ -127,6 +129,7 @@ maven.install(
 
 maven.install(
     name = "kotlin",
+    fetch_sources = False,
     artifacts = [
         "org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10",
         "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:2.4.10",
@@ -135,6 +138,7 @@ maven.install(
         "https://maven-central.storage-download.googleapis.com/maven2",
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
     ],
     lock_file = "//:kotlin_install.json",
     fail_if_repin_required = True,
@@ -144,6 +148,7 @@ maven.install(
 
 maven.install(
     name = "security",
+    fetch_sources = False,
     artifacts = [
         "org.bouncycastle:bcprov-jdk18on:1.83",
         "org.bouncycastle:bcpkix-jdk18on:1.83",
@@ -151,6 +156,7 @@ maven.install(
     repositories = [
         "https://maven-central.storage-download.googleapis.com/maven2",
         "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
     ],
     lock_file = "//:security_install.json",
     fail_if_repin_required = True,
@@ -160,11 +166,13 @@ maven.install(
 
 maven.install(
     name = "framework",
+    fetch_sources = False,
     artifacts = [
         "indi.android:aosp-framework-library:35",
     ],
     repositories = [
         "https://gitlab.com/api/v4/projects/81628475/packages/maven",
+        "https://repo.maven.apache.org/maven2",
     ],
     lock_file = "//:framework_install.json",
     fail_if_repin_required = True,
