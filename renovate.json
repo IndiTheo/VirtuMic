@@ -1,0 +1,90 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "enabledManagers": [
+    "bazel-module",
+    "custom.regex"
+  ],
+  "dependencyDashboard": {
+    "enabled": true
+  },
+  "prConcurrentLimit": 3,
+  "prHourlyLimit": 2,
+  "automerge": false,
+  "rebaseWhen": "behind-base-branch",
+  "gitIgnoredAuthors": [
+    "dependency-updater-bot@indidevs.com"
+  ],
+  "commitMessageLowerCase": "auto",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Maven BOMs in MODULE.bazel",
+      "managerFilePatterns": [
+        "/(^|/)MODULE\\.bazel$/"
+      ],
+      "matchStrings": [
+        "(?s)boms\\s*=\\s*\\[.*?\"(?<depName>[^:\"]+:[^:\"]+):(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "maven",
+      "versioningTemplate": "maven"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Compose BOM → Google Maven registry",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "androidx.compose:compose-bom"
+      ],
+      "registryUrls": [
+        "https://maven.google.com"
+      ]
+    },
+    {
+      "description": "Other Maven minor and patch updates together",
+      "matchDatasources": [
+        "maven"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "maven minor and patch"
+    },
+    {
+      "description": "Compose BOM and AndroidX together",
+      "matchPackageNames": [
+        "androidx.compose:compose-bom"
+      ],
+      "groupName": "androidx and compose"
+    },
+    {
+      "description": "Kotlin ecosystem together",
+      "matchPackageNames": [
+        "org.jetbrains.kotlin*"
+      ],
+      "groupName": "kotlin ecosystem"
+    },
+    {
+      "description": "Bazel module minor and patch updates together",
+      "matchManagers": [
+        "bazel-module"
+      ],
+      "matchDepTypes": [
+        "bazel_dep"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "bazel modules"
+    }
+  ]
+}
