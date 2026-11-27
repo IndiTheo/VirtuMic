@@ -37,6 +37,17 @@
   ],
   "packageRules": [
     {
+      "description": "Other Maven minor and patch updates together",
+      "matchDatasources": [
+        "maven"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "maven minor and patch"
+    },
+    {
       "description": "Compose BOM and AndroidX together",
       "matchPackageNames": [
         "androidx.compose:compose-bom"
@@ -49,22 +60,6 @@
         "org.jetbrains.kotlin*"
       ],
       "groupName": "kotlin ecosystem"
-    },
-    {
-      "description": "Other Maven minor and patch updates together",
-      "matchDatasources": [
-        "maven"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "matchPackageNames": [
-        "*",
-        "!androidx.compose:compose-bom",
-        "!org.jetbrains.kotlin*"
-      ],
-      "groupName": "maven minor and patch"
     },
     {
       "description": "Bazel module minor and patch updates together",
