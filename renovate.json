@@ -14,9 +14,6 @@
   },
   "prConcurrentLimit": 3,
   "prHourlyLimit": 2,
-  "schedule": [
-    "before 6am on Monday"
-  ],
   "automerge": false,
   "rebaseWhen": "behind-base-branch",
   "gitIgnoredAuthors": [
@@ -31,7 +28,7 @@
         "/(^|/)MODULE\\.bazel$/"
       ],
       "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+registry=(?<registryUrl>\\S+)\\s+\"(?<depName>[^:\"]+:[^:\"]+):(?<currentValue>[^\"]+)\""
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+registry=(?<registryUrl>\\S+)\\s*\"(?<depName>[^:\"]+:[^:\"]+):(?<currentValue>[^\"]+)\""
       ]
     }
   ],
