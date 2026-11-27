@@ -102,7 +102,7 @@ sync_bazel_lockfiles:
           fi
         fi
       done
-    - bazel mod deps --config=ci --lockfile_mode=update
+    - bazel mod deps --lockfile_mode=update
     - |
       if [ -n "$(git status --porcelain MODULE.bazel.lock '*_install.json')" ]; then
         git remote set-url origin "https://oauth2:${RENOVATE_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
