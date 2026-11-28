@@ -32,10 +32,14 @@ stages:
   - preview
   - release
 
+.skip_on_schedule: &skip_on_schedule
+  - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    when: never
+
 # Override the official template's stages to match our pipeline
 renovate-config-validator:
   stage: lint
-  image: ghcr.io/renovatebot/renovate:44
+  image: ghcr.io/renovatebot/renovate:45
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
@@ -46,30 +50,12 @@ renovate-config-validator:
 
 renovate:
   stage: infra
+  image: $CI_BASE_IMAGE
   variables:
     RENOVATE_AUTODISCOVER: "false"
     RENOVATE_REPOSITORIES: "$CI_PROJECT_PATH"
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-      variables:
-        RENOVATE_DRY_RUN: "full"
-        RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
-        RENOVATE_CONFIG_FILE: "renovate.json"
-
-# Autofix job: runs on Renovate MRs to regenerate all lockfiles
-# Runs in .pre (before lint/build) so lockfiles are fresh for the MR pipeline
-sync_bazel_lockfiles:
-  stage: .pre
-  image: $CI_BASE_IMAGE
-  variables:
-    GIT_DEPTH: 0
-    GIT_STRATEGY: clone
     MISE_CONFIG_FILE: "ci/build-mise.toml"
-    GIT_AUTHOR_NAME: "Bazel Lockfile Bot"
-    GIT_AUTHOR_EMAIL: "dependency-updater-bot@indidevs.com"
-    GIT_COMMITTER_NAME: "Bazel Lockfile Bot"
-    GIT_COMMITTER_EMAIL: "dependency-updater-bot@indidevs.com"
+    RENOVATE_ALLOWED_COMMANDS: '["^bash ci/sync_bazel_lockfiles\\.sh$"]'
   cache:
     key:
       files:
@@ -80,38 +66,30 @@ sync_bazel_lockfiles:
       - .bazel-repo-cache/
     policy: pull-push
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate/'
-      changes:
-        - MODULE.bazel
-  script:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web" && $RENOVATE_DRY_RUN'
+      variables:
+        RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
+        RENOVATE_CONFIG_FILE: "renovate.json"
+        RENOVATE_POST_UPGRADE_TASKS: '{"commands":["bash ci/sync_bazel_lockfiles.sh"],"fileFilters":["MODULE.bazel.lock","*_install.json"],"executionMode":"branch"}'
+        RENOVATE_PR_HOURLY_LIMIT: "0"
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      variables:
+        RENOVATE_DRY_RUN: "full"
+        RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
+        RENOVATE_CONFIG_FILE: "renovate.json"
+        RENOVATE_POST_UPGRADE_TASKS: '{"commands":["bash ci/sync_bazel_lockfiles.sh"],"fileFilters":["MODULE.bazel.lock","*_install.json"],"executionMode":"branch"}'
+        RENOVATE_PR_HOURLY_LIMIT: "0"
+  before_script:
     - eval "$(mise activate bash --quiet)"
-    # Repin only the lockfiles whose inputs actually changed.
-    # The repin check is a signature check evaluated during repository-rule
-    # fetch, so a plain `bazel build --nobuild` (without REPIN) surfaces the failure
-    # without compiling any targets.
-    - |
-      for repo in android kotlin security framework; do
-        if ! bazel build --nobuild --config=ci "@${repo}//..." > /tmp/repin_${repo}.log 2>&1; then
-          if grep -q "must be regenerated" /tmp/repin_${repo}.log; then
-            echo "Repinning ${repo}..."
-            REPIN=1 bazel run --config=ci "@unpinned_${repo}//:pin"
-          else
-            echo "ERROR: build of @${repo} failed for a non-repin reason:" >&2
-            cat /tmp/repin_${repo}.log >&2
-            exit 1
-          fi
-        fi
-      done
-    - bazel mod deps --lockfile_mode=update
-    - |
-      if [ -n "$(git status --porcelain MODULE.bazel.lock '*_install.json')" ]; then
-        git remote set-url origin "https://oauth2:${RENOVATE_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-        git add MODULE.bazel.lock "*_install.json"
-        git commit -m "chore(deps): sync bazel and maven lockfiles"
-        git push origin "HEAD:${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
-        echo "Pushed lockfile sync; failing this pipeline so the MR waits for the new commit's pipeline."
-        exit 1
-      fi
+    - npm install -g renovate@45
+  script:
+    - renovate $RENOVATE_EXTRA_FLAGS
+  artifacts:
+    when: always
+    paths:
+      - renovate-log.ndjson
+    expire_in: 7 days
 
 # --- BASE TEMPLATES & ANCHORS ---
 
@@ -247,6 +225,7 @@ build_library:core:
     - job: build_ci_base_image
       optional: true
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *core_changes
@@ -266,6 +245,7 @@ build_library:service:
     - job: build_ci_base_image
       optional: true
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *service_changes
@@ -312,6 +292,7 @@ build:app:
     - bazel build --config=ci --android_platforms=//:x86_64 //virtumic-app:virtumic
     - cp bazel-bin/virtumic-app/virtumic.apk dist/virtumic-x86_64.apk
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *app_changes
