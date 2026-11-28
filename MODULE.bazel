@@ -168,7 +168,7 @@ maven.install(
     name = "framework",
     fetch_sources = False,
     artifacts = [
-        "indi.android:aosp-framework-library:35",
+        "indi.android:aosp-framework-library:37",
     ],
     repositories = [
         "https://gitlab.com/api/v4/projects/81628475/packages/maven",
