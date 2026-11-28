@@ -52,7 +52,6 @@ renovate:
     RENOVATE_REPOSITORIES: "$CI_PROJECT_PATH"
     MISE_CONFIG_FILE: "ci/build-mise.toml"
     RENOVATE_ALLOWED_COMMANDS: '["^bash ci/sync_bazel_lockfiles\\.sh$"]'
-    RENOVATE_EXPOSED_HOST_ENV_VARS: '["ANDROID_HOME","ANDROID_NDK_HOME","ANDROID_SDK_ROOT","JAVA_HOME","PATH"]'
   cache:
     key:
       files:
