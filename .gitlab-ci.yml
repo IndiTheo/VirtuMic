@@ -63,6 +63,10 @@ renovate:
     policy: pull-push
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web" && $RENOVATE_DRY_RUN'
+      variables:
+        RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
+        RENOVATE_CONFIG_FILE: "renovate.json"
     - if: '$CI_PIPELINE_SOURCE == "web"'
       variables:
         RENOVATE_DRY_RUN: "full"
