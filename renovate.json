@@ -16,9 +16,11 @@
   "prHourlyLimit": 2,
   "automerge": false,
   "rebaseWhen": "behind-base-branch",
-  "gitIgnoredAuthors": [
-    "dependency-updater-bot@indidevs.com"
-  ],
+  "postUpgradeTasks": {
+    "commands": ["bash ci/sync_bazel_lockfiles.sh"],
+    "executionMode": "branch",
+    "fileFilters": ["MODULE.bazel.lock", "*_install.json"]
+  },
   "commitMessageLowerCase": "auto",
   "customManagers": [
     {
