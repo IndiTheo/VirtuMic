@@ -52,6 +52,7 @@ renovate:
     RENOVATE_REPOSITORIES: "$CI_PROJECT_PATH"
     MISE_CONFIG_FILE: "ci/build-mise.toml"
     RENOVATE_ALLOWED_COMMANDS: '["^bash ci/sync_bazel_lockfiles\\.sh$"]'
+    RENOVATE_EXPOSED_HOST_ENV_VARS: '["ANDROID_HOME","ANDROID_NDK_HOME","ANDROID_SDK_ROOT","JAVA_HOME","PATH"]'
   cache:
     key:
       files:
@@ -67,14 +68,25 @@ renovate:
       variables:
         RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
         RENOVATE_CONFIG_FILE: "renovate.json"
+        RENOVATE_POST_UPGRADE_TASKS: '{"commands":["bash ci/sync_bazel_lockfiles.sh"],"fileFilters":["MODULE.bazel.lock","*_install.json"],"executionMode":"branch"}'
+        RENOVATE_PR_HOURLY_LIMIT: "0"
     - if: '$CI_PIPELINE_SOURCE == "web"'
       variables:
         RENOVATE_DRY_RUN: "full"
         RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
         RENOVATE_CONFIG_FILE: "renovate.json"
+        RENOVATE_POST_UPGRADE_TASKS: '{"commands":["bash ci/sync_bazel_lockfiles.sh"],"fileFilters":["MODULE.bazel.lock","*_install.json"],"executionMode":"branch"}'
+        RENOVATE_PR_HOURLY_LIMIT: "0"
   before_script:
     - eval "$(mise activate bash --quiet)"
     - npm install -g renovate@45
+  script:
+    - renovate $RENOVATE_EXTRA_FLAGS
+  artifacts:
+    when: always
+    paths:
+      - renovate-log.ndjson
+    expire_in: 7 days
 
 # --- BASE TEMPLATES & ANCHORS ---
 
