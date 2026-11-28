@@ -12,7 +12,7 @@
     "androidx.compose.runtime:runtime": -996304817,
     "androidx.compose.ui:ui": 1511219445,
     "androidx.compose.ui:ui-tooling-preview": -1952620675,
-    "androidx.compose:compose-bom": 1956576973,
+    "androidx.compose:compose-bom": 1036876265,
     "androidx.core:core-ktx": 438051419,
     "androidx.lifecycle:lifecycle-common": -1988951206,
     "androidx.lifecycle:lifecycle-livedata-ktx": 1195273643,
@@ -52,141 +52,138 @@
     "repositories": 1617615736
   },
   "__RESOLVED_ARTIFACTS_HASH": {
-    "androidx.activity:activity-compose:aar": 1737810065,
-    "androidx.activity:activity-ktx:aar": -1776871431,
-    "androidx.activity:activity:aar": -401262556,
+    "androidx.activity:activity-compose:aar": 1524494778,
+    "androidx.activity:activity-ktx:aar": 1687063682,
+    "androidx.activity:activity:aar": 1899301616,
     "androidx.annotation:annotation": -677498225,
     "androidx.annotation:annotation-experimental:aar": 1491143965,
     "androidx.annotation:annotation-jvm": 1957860954,
     "androidx.arch.core:core-common": 1675988562,
     "androidx.arch.core:core-runtime:aar": 1976166579,
-    "androidx.autofill:autofill:aar": 382758634,
+    "androidx.autofill:autofill:aar": -1764561503,
     "androidx.collection:collection": 637779259,
     "androidx.collection:collection-jvm": -1416913025,
     "androidx.collection:collection-ktx": 2052132122,
-    "androidx.compose.animation:animation-android:aar": 361426258,
-    "androidx.compose.animation:animation-core-android:aar": 1347182817,
-    "androidx.compose.animation:animation-core:aar": 1041183107,
-    "androidx.compose.animation:animation:aar": -675739550,
-    "androidx.compose.foundation:foundation-android:aar": -935858993,
-    "androidx.compose.foundation:foundation-layout-android:aar": -1901883652,
-    "androidx.compose.foundation:foundation-layout:aar": -1598018461,
-    "androidx.compose.foundation:foundation:aar": -632344425,
-    "androidx.compose.material3:material3-android:aar": -782099108,
-    "androidx.compose.material3:material3:aar": -963146538,
-    "androidx.compose.material:material-icons-core-android:aar": 1813453095,
-    "androidx.compose.material:material-icons-core:aar": 297823506,
-    "androidx.compose.material:material-icons-extended-android:aar": -1665176098,
-    "androidx.compose.material:material-icons-extended:aar": -1252923030,
-    "androidx.compose.material:material-ripple-android:aar": 331912294,
-    "androidx.compose.material:material-ripple:aar": -791469168,
-    "androidx.compose.runtime:runtime-android:aar": -856336302,
-    "androidx.compose.runtime:runtime-annotation": -1742669945,
-    "androidx.compose.runtime:runtime-annotation-android:aar": -1265020420,
-    "androidx.compose.runtime:runtime-annotation-jvm": 684572459,
-    "androidx.compose.runtime:runtime-retain-android:aar": -705935958,
-    "androidx.compose.runtime:runtime-retain:aar": 1744792538,
-    "androidx.compose.runtime:runtime-saveable-android:aar": 13440403,
-    "androidx.compose.runtime:runtime-saveable:aar": 646266178,
-    "androidx.compose.runtime:runtime:aar": -977610582,
-    "androidx.compose.ui:ui-android:aar": 1584353704,
-    "androidx.compose.ui:ui-geometry-android:aar": -1999813534,
-    "androidx.compose.ui:ui-geometry:aar": 590133073,
-    "androidx.compose.ui:ui-graphics-android:aar": -1698991504,
-    "androidx.compose.ui:ui-graphics:aar": -1718776957,
-    "androidx.compose.ui:ui-text-android:aar": 1953592256,
-    "androidx.compose.ui:ui-text:aar": 21367090,
-    "androidx.compose.ui:ui-tooling-preview-android:aar": 1156650645,
-    "androidx.compose.ui:ui-tooling-preview:aar": 1421317925,
-    "androidx.compose.ui:ui-unit-android:aar": -1445229582,
-    "androidx.compose.ui:ui-unit:aar": -670035560,
-    "androidx.compose.ui:ui-util-android:aar": 431035174,
-    "androidx.compose.ui:ui-util:aar": 2050047570,
-    "androidx.compose.ui:ui:aar": -238712447,
+    "androidx.compose.animation:animation-android:aar": -1947809471,
+    "androidx.compose.animation:animation-core-android:aar": 976428296,
+    "androidx.compose.animation:animation-core:aar": 296721240,
+    "androidx.compose.animation:animation:aar": -346297116,
+    "androidx.compose.foundation:foundation-android:aar": 813282570,
+    "androidx.compose.foundation:foundation-layout-android:aar": -2085190923,
+    "androidx.compose.foundation:foundation-layout:aar": 1658184258,
+    "androidx.compose.foundation:foundation:aar": 911887456,
+    "androidx.compose.material3:material3-android:aar": 33609529,
+    "androidx.compose.material3:material3-ripple-android:aar": 951917406,
+    "androidx.compose.material3:material3:aar": 2057904483,
+    "androidx.compose.material:material-icons-core-android:aar": -1297619011,
+    "androidx.compose.material:material-icons-core:aar": -1569738266,
+    "androidx.compose.material:material-icons-extended-android:aar": -1412958817,
+    "androidx.compose.material:material-icons-extended:aar": 166291781,
+    "androidx.compose.material:material-ripple-android:aar": -135028093,
+    "androidx.compose.material:material-ripple:aar": 1997119354,
+    "androidx.compose.runtime:runtime-android:aar": 239189271,
+    "androidx.compose.runtime:runtime-annotation": 1357809309,
+    "androidx.compose.runtime:runtime-annotation-android:aar": -1368190278,
+    "androidx.compose.runtime:runtime-annotation-jvm": -2098538250,
+    "androidx.compose.runtime:runtime-retain-android:aar": -1311341995,
+    "androidx.compose.runtime:runtime-retain:aar": -1903380710,
+    "androidx.compose.runtime:runtime-saveable-android:aar": 418636254,
+    "androidx.compose.runtime:runtime-saveable:aar": 326267856,
+    "androidx.compose.runtime:runtime:aar": 747678241,
+    "androidx.compose.ui:ui-android:aar": 1746848675,
+    "androidx.compose.ui:ui-geometry-android:aar": 250385067,
+    "androidx.compose.ui:ui-geometry:aar": 1959889783,
+    "androidx.compose.ui:ui-graphics-android:aar": 974651970,
+    "androidx.compose.ui:ui-graphics:aar": 1116964203,
+    "androidx.compose.ui:ui-text-android:aar": -1053912123,
+    "androidx.compose.ui:ui-text:aar": 1636251792,
+    "androidx.compose.ui:ui-tooling-preview-android:aar": 1866399210,
+    "androidx.compose.ui:ui-tooling-preview:aar": -210227393,
+    "androidx.compose.ui:ui-unit-android:aar": 381496645,
+    "androidx.compose.ui:ui-unit:aar": 872214958,
+    "androidx.compose.ui:ui-util-android:aar": 1010788422,
+    "androidx.compose.ui:ui-util:aar": 1178802596,
+    "androidx.compose.ui:ui:aar": -58853897,
     "androidx.concurrent:concurrent-futures": 43593129,
     "androidx.concurrent:concurrent-futures-ktx": 1627295643,
-    "androidx.core:core-ktx:aar": -1666079898,
+    "androidx.core:core-ktx:aar": -1260283527,
     "androidx.core:core-viewtree:aar": -1861117591,
-    "androidx.core:core:aar": -866057666,
-    "androidx.customview:customview-poolingcontainer:aar": -625185602,
-    "androidx.documentfile:documentfile:aar": 1435339671,
-    "androidx.dynamicanimation:dynamicanimation:aar": 455982405,
-    "androidx.emoji2:emoji2:aar": -536299867,
+    "androidx.core:core:aar": 248301857,
+    "androidx.customview:customview-poolingcontainer:aar": 1891445024,
+    "androidx.documentfile:documentfile:aar": 1379228454,
+    "androidx.emoji2:emoji2:aar": 1836851953,
     "androidx.exifinterface:exifinterface:aar": 1687673058,
-    "androidx.graphics:graphics-path:aar": -1545300922,
+    "androidx.graphics:graphics-path:aar": 1842758839,
+    "androidx.graphics:graphics-shapes-android:aar": -1043221235,
+    "androidx.graphics:graphics-shapes:aar": -196420735,
     "androidx.interpolator:interpolator:aar": 326365070,
-    "androidx.legacy:legacy-support-core-utils:aar": -2126082848,
-    "androidx.lifecycle:lifecycle-common": 547430002,
-    "androidx.lifecycle:lifecycle-common-java8": 891613653,
-    "androidx.lifecycle:lifecycle-common-jvm": 691768520,
-    "androidx.lifecycle:lifecycle-livedata-core-ktx:aar": 2003453321,
-    "androidx.lifecycle:lifecycle-livedata-core:aar": 1776982451,
-    "androidx.lifecycle:lifecycle-livedata-ktx:aar": 2014671607,
-    "androidx.lifecycle:lifecycle-livedata:aar": 696651863,
-    "androidx.lifecycle:lifecycle-process:aar": 980365078,
-    "androidx.lifecycle:lifecycle-runtime-android:aar": 1929379088,
-    "androidx.lifecycle:lifecycle-runtime-compose-android:aar": 750799825,
-    "androidx.lifecycle:lifecycle-runtime-compose:aar": 1625773057,
-    "androidx.lifecycle:lifecycle-runtime-ktx-android:aar": 2037059561,
-    "androidx.lifecycle:lifecycle-runtime-ktx:aar": 109593941,
-    "androidx.lifecycle:lifecycle-runtime:aar": 494879575,
-    "androidx.lifecycle:lifecycle-viewmodel-android:aar": 125988107,
-    "androidx.lifecycle:lifecycle-viewmodel-compose-android:aar": 89884237,
-    "androidx.lifecycle:lifecycle-viewmodel-compose:aar": -280093941,
-    "androidx.lifecycle:lifecycle-viewmodel-ktx:aar": 792049923,
-    "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:aar": -407028560,
-    "androidx.lifecycle:lifecycle-viewmodel-savedstate:aar": 1447112116,
-    "androidx.lifecycle:lifecycle-viewmodel:aar": 1488625486,
-    "androidx.loader:loader:aar": 1207454192,
-    "androidx.localbroadcastmanager:localbroadcastmanager:aar": -157702972,
+    "androidx.lifecycle:lifecycle-common": -2019540624,
+    "androidx.lifecycle:lifecycle-common-java8": 1640351318,
+    "androidx.lifecycle:lifecycle-common-jvm": -1287258178,
+    "androidx.lifecycle:lifecycle-livedata-core-ktx:aar": 1045260205,
+    "androidx.lifecycle:lifecycle-livedata-core:aar": 962525522,
+    "androidx.lifecycle:lifecycle-livedata-ktx:aar": -1605261576,
+    "androidx.lifecycle:lifecycle-livedata:aar": 121419843,
+    "androidx.lifecycle:lifecycle-process:aar": 1806023375,
+    "androidx.lifecycle:lifecycle-runtime-android:aar": -197663868,
+    "androidx.lifecycle:lifecycle-runtime-compose-android:aar": 2106494329,
+    "androidx.lifecycle:lifecycle-runtime-compose:aar": 1546863852,
+    "androidx.lifecycle:lifecycle-runtime-ktx-android:aar": 1744913906,
+    "androidx.lifecycle:lifecycle-runtime-ktx:aar": 1751366404,
+    "androidx.lifecycle:lifecycle-runtime:aar": 1070401879,
+    "androidx.lifecycle:lifecycle-viewmodel-android:aar": 1517074212,
+    "androidx.lifecycle:lifecycle-viewmodel-compose-android:aar": -1373189596,
+    "androidx.lifecycle:lifecycle-viewmodel-compose:aar": -1074079182,
+    "androidx.lifecycle:lifecycle-viewmodel-ktx:aar": -1245881861,
+    "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:aar": -900459595,
+    "androidx.lifecycle:lifecycle-viewmodel-savedstate:aar": 773869476,
+    "androidx.lifecycle:lifecycle-viewmodel:aar": -1597785407,
     "androidx.media3:media3-common:aar": -1588226682,
     "androidx.media3:media3-container:aar": 131132847,
     "androidx.media3:media3-database:aar": -428164414,
     "androidx.media3:media3-datasource:aar": -1690677995,
     "androidx.media3:media3-decoder:aar": 92207735,
-    "androidx.media3:media3-exoplayer:aar": -44287197,
+    "androidx.media3:media3-exoplayer:aar": 1650020184,
     "androidx.media3:media3-extractor:aar": -626949181,
-    "androidx.media3:media3-session:aar": 180491906,
-    "androidx.media:media:aar": -972331261,
-    "androidx.navigation:navigation-common-ktx:aar": -963546296,
-    "androidx.navigation:navigation-common:aar": 1192997170,
-    "androidx.navigation:navigation-compose:aar": 879420673,
-    "androidx.navigation:navigation-runtime-ktx:aar": 2122557307,
-    "androidx.navigation:navigation-runtime:aar": 451122842,
-    "androidx.navigationevent:navigationevent-android:aar": 2115236990,
-    "androidx.navigationevent:navigationevent:aar": -595556610,
-    "androidx.print:print:aar": -1424743924,
+    "androidx.media3:media3-session:aar": 1494234953,
+    "androidx.media:media:aar": -1531179416,
+    "androidx.navigation:navigation-common-ktx:aar": -1004801514,
+    "androidx.navigation:navigation-common:aar": 1620940293,
+    "androidx.navigation:navigation-compose:aar": 1236345243,
+    "androidx.navigation:navigation-runtime-ktx:aar": -2123626869,
+    "androidx.navigation:navigation-runtime:aar": 56480903,
+    "androidx.navigationevent:navigationevent-android:aar": 952767714,
+    "androidx.navigationevent:navigationevent:aar": -1382965541,
     "androidx.profileinstaller:profileinstaller:aar": -499520723,
-    "androidx.savedstate:savedstate-android:aar": 1573286390,
-    "androidx.savedstate:savedstate-compose-android:aar": 1403786754,
-    "androidx.savedstate:savedstate-compose:aar": 1361268294,
-    "androidx.savedstate:savedstate-ktx:aar": 370483221,
-    "androidx.savedstate:savedstate:aar": -2930485,
+    "androidx.savedstate:savedstate-android:aar": 2010368840,
+    "androidx.savedstate:savedstate-compose-android:aar": 2113218992,
+    "androidx.savedstate:savedstate-compose:aar": -1736613059,
+    "androidx.savedstate:savedstate-ktx:aar": -1324652010,
+    "androidx.savedstate:savedstate:aar": -1204551608,
     "androidx.security:security-crypto:aar": -592252273,
     "androidx.startup:startup-runtime:aar": 861848307,
     "androidx.test.espresso:espresso-idling-resource:aar": -419264045,
-    "androidx.test.ext:junit:aar": 463100849,
+    "androidx.test.ext:junit:aar": -356581508,
     "androidx.test.services:storage:aar": -597756827,
-    "androidx.test:core:aar": 1841383813,
+    "androidx.test:core:aar": 290072902,
     "androidx.test:monitor:aar": -557625502,
     "androidx.test:rules:aar": -273279193,
     "androidx.test:runner:aar": -1465516181,
     "androidx.tracing:tracing:aar": -1667085777,
-    "androidx.transition:transition:aar": -352222827,
     "androidx.versionedparcelable:versionedparcelable:aar": 1402428841,
     "androidx.window:window-core": -2113874992,
     "androidx.window:window-core-jvm": -1755134793,
-    "androidx.window:window:aar": -1227642951,
+    "androidx.window:window:aar": 634709894,
     "cafe.cryptography:curve25519-elisabeth": 1926639764,
     "cafe.cryptography:ed25519-elisabeth": -494671681,
     "com.almworks.sqlite4java:sqlite4java": 1585971300,
     "com.github.Flyfish233:spake2-java": 178779926,
     "com.github.IndiTheo.Kadb:kadb": 2035720432,
-    "com.github.IndiTheo.Kadb:kadb-android:aar": -663099278,
+    "com.github.IndiTheo.Kadb:kadb-android:aar": -1901519563,
     "com.github.IndiTheo.Kadb:kadb-mdns": -1724607259,
     "com.github.IndiTheo.Kadb:kadb-mdns-android:aar": 1353133443,
-    "com.github.alorma.compose-settings:ui-core-android:aar": -1479915175,
-    "com.github.alorma.compose-settings:ui-tiles-android:aar": 1520549916,
+    "com.github.alorma.compose-settings:ui-core-android:aar": 109518399,
+    "com.github.alorma.compose-settings:ui-tiles-android:aar": 624722063,
     "com.google.auto.value:auto-value-annotations": 641018093,
     "com.google.code.findbugs:jsr305": 870839855,
     "com.google.code.gson:gson": -1575757252,
@@ -199,8 +196,8 @@
     "com.google.j2objc:j2objc-annotations": 248818742,
     "com.google.testparameterinjector:test-parameter-injector": 1926198670,
     "com.ibm.icu:icu4j": -2015640546,
-    "com.indidevs.android:adbeesh:aar": 1906714769,
-    "com.indidevs.android:shellom:aar": -1356169362,
+    "com.indidevs.android:adbeesh:aar": -1964520005,
+    "com.indidevs.android:shellom:aar": 1868871477,
     "com.squareup.okio:okio": 1553195528,
     "com.squareup.okio:okio-jvm": 853016514,
     "dev.rikka.shizuku:aidl:aar": -335269107,
@@ -224,31 +221,31 @@
     "org.conscrypt:conscrypt-android:aar": 35682202,
     "org.conscrypt:conscrypt-openjdk-uber": 742580967,
     "org.hamcrest:hamcrest-core": 649657847,
-    "org.jetbrains.androidx.lifecycle:lifecycle-common": 33629967,
-    "org.jetbrains.androidx.lifecycle:lifecycle-runtime": 1026398124,
-    "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose": 194577087,
-    "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel": -1742026314,
-    "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate": -1146558764,
-    "org.jetbrains.androidx.savedstate:savedstate": -1512601459,
-    "org.jetbrains.androidx.savedstate:savedstate-compose": -904095180,
-    "org.jetbrains.compose.animation:animation": -352832066,
-    "org.jetbrains.compose.animation:animation-core": 836147983,
+    "org.jetbrains.androidx.lifecycle:lifecycle-common": 1751749904,
+    "org.jetbrains.androidx.lifecycle:lifecycle-runtime": 2038813145,
+    "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose": -420272879,
+    "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel": 226391804,
+    "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate": -2036994478,
+    "org.jetbrains.androidx.savedstate:savedstate": 1299113330,
+    "org.jetbrains.androidx.savedstate:savedstate-compose": -1306671711,
+    "org.jetbrains.compose.animation:animation": -145755296,
+    "org.jetbrains.compose.animation:animation-core": -499550723,
     "org.jetbrains.compose.annotation-internal:annotation": -1607694092,
     "org.jetbrains.compose.collection-internal:collection": 217926313,
-    "org.jetbrains.compose.foundation:foundation": -555460727,
-    "org.jetbrains.compose.foundation:foundation-layout": 1370869133,
-    "org.jetbrains.compose.material3:material3": 541300086,
-    "org.jetbrains.compose.material:material-ripple": -1899861254,
-    "org.jetbrains.compose.runtime:runtime": -1096892895,
-    "org.jetbrains.compose.runtime:runtime-saveable": -183268922,
-    "org.jetbrains.compose.ui:ui": 1459845698,
-    "org.jetbrains.compose.ui:ui-backhandler": -1052107103,
-    "org.jetbrains.compose.ui:ui-geometry": 266128277,
-    "org.jetbrains.compose.ui:ui-graphics": 1236762513,
-    "org.jetbrains.compose.ui:ui-text": 1678641928,
+    "org.jetbrains.compose.foundation:foundation": 706590663,
+    "org.jetbrains.compose.foundation:foundation-layout": 1699979739,
+    "org.jetbrains.compose.material3:material3": -191527368,
+    "org.jetbrains.compose.material:material-ripple": 1280550766,
+    "org.jetbrains.compose.runtime:runtime": 1444112375,
+    "org.jetbrains.compose.runtime:runtime-saveable": 574388530,
+    "org.jetbrains.compose.ui:ui": 386755364,
+    "org.jetbrains.compose.ui:ui-backhandler": -2118306385,
+    "org.jetbrains.compose.ui:ui-geometry": -1575863113,
+    "org.jetbrains.compose.ui:ui-graphics": -1066886892,
+    "org.jetbrains.compose.ui:ui-text": -510608915,
     "org.jetbrains.compose.ui:ui-uikit": -1324618636,
-    "org.jetbrains.compose.ui:ui-unit": -2033326906,
-    "org.jetbrains.compose.ui:ui-util": -1336988873,
+    "org.jetbrains.compose.ui:ui-unit": 1027056445,
+    "org.jetbrains.compose.ui:ui-util": -1059650244,
     "org.jetbrains.kotlin:kotlin-reflect": 1441839096,
     "org.jetbrains.kotlin:kotlin-stdlib": 857027773,
     "org.jetbrains.kotlin:kotlin-stdlib-common": 2031482529,
@@ -288,14 +285,14 @@
     "org.yaml:snakeyaml": 1733283626
   },
   "conflict_resolution": {
-    "androidx.compose.foundation:foundation": "androidx.compose.foundation:foundation:1.11.0",
-    "androidx.compose.foundation:foundation-layout": "androidx.compose.foundation:foundation-layout:1.11.0",
-    "androidx.compose.material3:material3": "androidx.compose.material3:material3:1.4.0",
+    "androidx.compose.foundation:foundation": "androidx.compose.foundation:foundation:1.13.0",
+    "androidx.compose.foundation:foundation-layout": "androidx.compose.foundation:foundation-layout:1.13.0",
+    "androidx.compose.material3:material3": "androidx.compose.material3:material3:1.5.0",
     "androidx.compose.material:material-icons-core": "androidx.compose.material:material-icons-core:1.7.8",
     "androidx.compose.material:material-icons-extended": "androidx.compose.material:material-icons-extended:1.7.8",
-    "androidx.compose.runtime:runtime": "androidx.compose.runtime:runtime:1.11.0",
-    "androidx.compose.ui:ui": "androidx.compose.ui:ui:1.11.0",
-    "androidx.compose.ui:ui-tooling-preview": "androidx.compose.ui:ui-tooling-preview:1.11.0"
+    "androidx.compose.runtime:runtime": "androidx.compose.runtime:runtime:1.13.0",
+    "androidx.compose.ui:ui": "androidx.compose.ui:ui:1.13.0",
+    "androidx.compose.ui:ui-tooling-preview": "androidx.compose.ui:ui-tooling-preview:1.13.0"
   },
   "artifacts": {
     "androidx.activity:activity-compose:aar": {
@@ -372,63 +369,69 @@
     },
     "androidx.compose.animation:animation-android:aar": {
       "shasums": {
-        "jar": "205bbee22092f07c314f2adeac58d1ae5e8480ba158d49fab86f1e7fc9bc2bcb"
+        "jar": "2ee220773b320285f19ae6234c01912e46aaf10eda55a7099875e4f9f22ce873"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.animation:animation-core-android:aar": {
       "shasums": {
-        "jar": "51d895b58992d11b0e13dab784e10cb5d26aa9bb4988484f9ed8e4ad59439d33"
+        "jar": "2b8fc2beedd30bff72faeb44515110ad5c0b651304dcf5b25fc61f251d589b79"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.animation:animation-core:aar": {
       "shasums": {
-        "jar": "854d6771e4d832319bbc103a52290dace4f3af9c4d48f93e452b13489a2babcd"
+        "jar": "ea93338b757798ab8b32f432f916f9c3d9849b17cb2540e92cc2f72b1ad69146"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.animation:animation:aar": {
       "shasums": {
-        "jar": "69221abe3cb686d82346464b08f0e80f450684b7ea6f9059a69ad4f90f1ba2ff"
+        "jar": "2807f14f7e0a33eb2b2f3be47dc99c2f61995924d2d35868a429f9d9a41b33e9"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.foundation:foundation-android:aar": {
       "shasums": {
-        "jar": "7e43a49faba7e694dfe1e7e29de77198f9636852c55c87df9ebb245c82874932"
+        "jar": "9c97dbb937321607311a081ac095551f160293b78624df51129e17b25b627f2c"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.foundation:foundation-layout-android:aar": {
       "shasums": {
-        "jar": "4002a244b03d2cb6312e84f295bfa014bc514b270110259220622fc7d284f3ba"
+        "jar": "32d2dd25683e8b18fd88370241072acab1cf275646e37cfb6b7677f52e107975"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.foundation:foundation-layout:aar": {
       "shasums": {
-        "jar": "f8a28cab65b33f66f8e221a28d4242122020fed3b9ea3b0221cff9b38b0cde09"
+        "jar": "6cc65732ce4ec3c0eb7ac983246b1982f8c1a8cc66ba2818f0c2de9bc718a9ab"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.foundation:foundation:aar": {
       "shasums": {
-        "jar": "f0b2328af92337e63a9e0fe68d0da048d71218de001299689a3268361ac4724b"
+        "jar": "7010e2f6ab1410fd48b16f3684ec40f4f7f745b044bbf506a066c1a888948674"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.material3:material3-android:aar": {
       "shasums": {
-        "jar": "3a37e8b36df3822fe1e6059f0f9fafda8800388860477624ac1b9422c418a36e"
+        "jar": "dd17540643810cd13007f64c85091fd98c6f7e7619437d2fd18e0c2e41155ee1"
       },
-      "version": "1.4.0"
+      "version": "1.5.0"
+    },
+    "androidx.compose.material3:material3-ripple-android:aar": {
+      "shasums": {
+        "jar": "8d947b02b21f6af335dbb92332a09d3029955cc5f62d8e3116b4474b04f30848"
+      },
+      "version": "1.5.0"
     },
     "androidx.compose.material3:material3:aar": {
       "shasums": {
-        "jar": "178e7c4ba39f5c84a7a8fe78915d6cabf433ac7775cac73b14d395fabd3074cd"
+        "jar": "e92bf5fea4253b2d5ee21d3e419cb09205f57edcdac2478a9f516ac4a9dfb36b"
       },
-      "version": "1.4.0"
+      "version": "1.5.0"
     },
     "androidx.compose.material:material-icons-core-android:aar": {
       "shasums": {
@@ -456,153 +459,153 @@
     },
     "androidx.compose.material:material-ripple-android:aar": {
       "shasums": {
-        "jar": "ea662863c5a1290c3e571832f6013c9129e7add844b026d97b14cea80186c600"
+        "jar": "c031c2416a283f8a7f58a969149c4247250237a194218fee4a9ff56cbd250cc2"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.material:material-ripple:aar": {
       "shasums": {
-        "jar": "ed6ac4b4d03054b30c8a84a6c06dbaece25c72d7c318447fe81d4bc7d69c35de"
+        "jar": "148fba3647ee2b1d785f5d8391b1c192180c1e2f6f2defc710fe6ba36b00b5b5"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.runtime:runtime-android:aar": {
       "shasums": {
-        "jar": "65a9e3c6b496e255bb54268ff4e44d3a6a316434d7e9310bdd940f41c2e0b6e7"
+        "jar": "39caa686185abd9b3366c04eb4691eb38828af9469d5df1cd6455b89d3b43bd3"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.runtime:runtime-annotation": {
       "shasums": {
-        "jar": "190e363a7f2951794f5b4f0986da454f39a425b87799b2d592c2a78972d175df"
+        "jar": "3d1dc8614d09bf4e084527244bcef7a0eeb556d781d39b53e98f9ebcc835e36e"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.runtime:runtime-annotation-android:aar": {
       "shasums": {
-        "jar": "6b22eab92c57305facaf62cc44f22aaa27442502cce41b7687b0d6617286b3a5"
+        "jar": "e2a54a464a34924dd824d54c4208cc69b3765adc981ad773bdc11297b1ce0781"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.runtime:runtime-annotation-jvm": {
       "shasums": {
-        "jar": "e286a8520709d7bdc66481c272660c2a8d26b12740f76102543ce45704370396"
+        "jar": "d5afbc509919492ddfbb7dddd480a0fbcb5ed1e641a2c3fb52d17d1789921b89"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.runtime:runtime-retain-android:aar": {
       "shasums": {
-        "jar": "2ad7decff6e10ca43d46d465442fb37b061634af61a749559e1f9415ecdab06a"
+        "jar": "cdd5001eaf098540aa7bf8d8b0b52c6d0f34deb116cdbd1eb6ef5bb02fa95c0b"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.runtime:runtime-retain:aar": {
       "shasums": {
-        "jar": "acc35bf3860d8c5dc395e995ccaa801740bfd8cff26f5008f07aca628cb4efdd"
+        "jar": "c44a824d662f29b72bb460a915ec6bc6c9262975ed0c6c047261c35b2b1feaef"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.runtime:runtime-saveable-android:aar": {
       "shasums": {
-        "jar": "4d2fb4f7fa483c6154a305eb04706b6b7a36e638db644ada6977fb58b287751a"
+        "jar": "b4adce846e4c5c5f557cb727897a329a46b8293d772b9f2f1be6e860b016ae49"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.runtime:runtime-saveable:aar": {
       "shasums": {
-        "jar": "035e94e12f13ffdb778093b4e47314b08fe2b0ec993a2d3a87ef5d958aeac952"
+        "jar": "917ab28b7a220b96337b9f1db86880469a1b546ef3231f8d02882dd757aa6d7a"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.runtime:runtime:aar": {
       "shasums": {
-        "jar": "db320db683750ffdebcf71c62b5deabe46402349aa584c78b1a5001dca0e5764"
+        "jar": "cba0cc107ec65ccc3f5a7cc63f234dc0b236278f558acff8452115597209cfdf"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-android:aar": {
       "shasums": {
-        "jar": "d98b1e5a0260b58d5ad39286dd928b8c50d56ed2fef2ce573120f4e7c91ec3e2"
+        "jar": "b5d23c05886f9c441e3cb004f8ac4614f96e9c1901795742bd9ddb5b8bad1b61"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-geometry-android:aar": {
       "shasums": {
-        "jar": "36f739faff8aee7830198954ff9bd84c2ae993ebb38aaf0c600c8263131606b9"
+        "jar": "d86f77f8f78b27c50755753d3e68bf4215c7071f9ee9ce6d3335f30b91eb0b18"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-geometry:aar": {
       "shasums": {
-        "jar": "747ce53d7869e02f69eea729722e783ab2728202e99bb348b7c1b87f87a6b431"
+        "jar": "118943af8c7a7c6cbdd0921e4b4973f6da8c14415c4a2b28a0993775b06e7223"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-graphics-android:aar": {
       "shasums": {
-        "jar": "4a932cbb69c9603b9d132671a349bbf0486fbcf75652a3b2b09c40fb97ce31ce"
+        "jar": "4b0db977082ad677338f471a2b97776162e7fcbf578c74a55af712c843cc5917"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-graphics:aar": {
       "shasums": {
-        "jar": "a5dadc1764a22073d29ae69f0889adfe7524df061a1be60a70eff30b764c9aeb"
+        "jar": "e0ba6ed21b0a8fee5c422f148341abe69ae5a4b522a226240f8cc70e9edf614a"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-text-android:aar": {
       "shasums": {
-        "jar": "6671af385db1056789d2594fe5b959bcfc0807ad77872685a4ff56d0955dd762"
+        "jar": "da7a21ac01fde97c5377926719e8731ee4035e30a9bde77fae8ec56d1a09d115"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-text:aar": {
       "shasums": {
-        "jar": "d7d225c560c4099c58b138ba182b9a38fd3914dc11d391fa78a9726d7085dc3f"
+        "jar": "4a4d3a518c7691ca397497af11ffe68b507c5794a4dce9147d354ebba6dbea28"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-tooling-preview-android:aar": {
       "shasums": {
-        "jar": "3835061e770ade81b578d03d863c9f551791e9dbeb911cc5a55afc230d6cc03e"
+        "jar": "898124443aca4ad75450b1f0ed03244a3cc340f028631eb2b827b41dd8fbe6a6"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-tooling-preview:aar": {
       "shasums": {
-        "jar": "1e2dd2e93bde36484263a9e731f74ac5853ca048a511cf79d575c5f91152c3bb"
+        "jar": "a4f153c45fa37dfd3cc74e8eb6000f512ab8d093f4fe6f021fdf964bd7b73a12"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-unit-android:aar": {
       "shasums": {
-        "jar": "ec47f6599111178fb81d3959503142d583ff735e3313496e845db3794393879a"
+        "jar": "51dbb2719c5ffca99fb96afc7531b22225a69d2c455677558a4c6a89f40fe70e"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-unit:aar": {
       "shasums": {
-        "jar": "2a7a96ef1c98b2ee34f11714d175aa0fa274bf548a65c2559419fb2d79251023"
+        "jar": "ec2b9500fdbe773ea8e7405be140ab581ad6676ebbdd73fdb5e3df21a507da24"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-util-android:aar": {
       "shasums": {
-        "jar": "bde77a7009b7e38ddf4cd9212581474b76f29f1190e912441b86efa1a39cd7c1"
+        "jar": "ef6862049e8eafc4e478e295aee38e015e11f6e35e3026c5ff45cdd626879f34"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui-util:aar": {
       "shasums": {
-        "jar": "a1b996f9e57ace10efed3f3048a28e7f91411855df1f637dcd11e50cb309eb02"
+        "jar": "17d23aa6d835e02e45fc813a637a24291d65beac35508af4693fb118c9846d54"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.compose.ui:ui:aar": {
       "shasums": {
-        "jar": "4e5a57dae2d7262e8822805457a1de7da4ce6986e9b49d7f65de4f7b123c70a8"
+        "jar": "da8a37ff8f6e419db5eb381cc2b16435860351284cd0106601cba2188bc072a1"
       },
-      "version": "1.11.0"
+      "version": "1.13.0"
     },
     "androidx.concurrent:concurrent-futures": {
       "shasums": {
@@ -630,9 +633,9 @@
     },
     "androidx.core:core:aar": {
       "shasums": {
-        "jar": "6bf03d39dbe3744acce227d3b697374c3625aae1025fbec8ad9fd7bd58bce431"
+        "jar": "55445ad0ff025963929892569a0bfc6b4c68e60d8b7c965dcffba09048c36c8e"
       },
-      "version": "1.16.0"
+      "version": "1.19.0"
     },
     "androidx.customview:customview-poolingcontainer:aar": {
       "shasums": {
@@ -646,17 +649,11 @@
       },
       "version": "1.1.0"
     },
-    "androidx.dynamicanimation:dynamicanimation:aar": {
-      "shasums": {
-        "jar": "ce005162c229bf308d2d5b12fb6cad0874069cbbeaccee63a8193bd08d40de04"
-      },
-      "version": "1.0.0"
-    },
     "androidx.emoji2:emoji2:aar": {
       "shasums": {
-        "jar": "433febd3434a45667176c76a64f3f205ca6335a6b544c5b5d57f25a38a375242"
+        "jar": "121738bd60060c7bb3742f10c034edc93f2a38b6de8ca8648bc799eda65b1bbf"
       },
-      "version": "1.4.0"
+      "version": "1.7.0"
     },
     "androidx.exifinterface:exifinterface:aar": {
       "shasums": {
@@ -666,19 +663,25 @@
     },
     "androidx.graphics:graphics-path:aar": {
       "shasums": {
-        "jar": "8ca4032b6d79b351f0b59ad4b580eddbb9423e1652f7c958830687f1eee2ec03"
+        "jar": "d031370d45ba4129a175fe9de913328a512b01a3c267e0eaf6b9b759f35842ae"
+      },
+      "version": "1.1.0"
+    },
+    "androidx.graphics:graphics-shapes-android:aar": {
+      "shasums": {
+        "jar": "7171269a4122feabb071768df46d10b362e47ac75fd0aa8dbcafa1f44f61b40c"
+      },
+      "version": "1.0.1"
+    },
+    "androidx.graphics:graphics-shapes:aar": {
+      "shasums": {
+        "jar": "b4c92f6af4b4c8febd5091303fbb2e1f7a5f15ea0de3da38eb5c5b02f99dff9a"
       },
       "version": "1.0.1"
     },
     "androidx.interpolator:interpolator:aar": {
       "shasums": {
         "jar": "33193135a64fe21fa2c35eec6688f1a76e512606c0fc83dc1b689e37add7732a"
-      },
-      "version": "1.0.0"
-    },
-    "androidx.legacy:legacy-support-core-utils:aar": {
-      "shasums": {
-        "jar": "a7edcf01d5b52b3034073027bc4775b78a4764bb6202bb91d61c829add8dd1c7"
       },
       "version": "1.0.0"
     },
@@ -696,9 +699,9 @@
     },
     "androidx.lifecycle:lifecycle-common-jvm": {
       "shasums": {
-        "jar": "37d89b2101f074ac6c260917dabb185607645ee200aa3018c7c5bde70edcf184"
+        "jar": "15943082d87bcd78830398fa377f2c8b12643de290d0906ed8e49a2d335ddb54"
       },
-      "version": "2.9.4"
+      "version": "2.10.0"
     },
     "androidx.lifecycle:lifecycle-livedata-core-ktx:aar": {
       "shasums": {
@@ -732,15 +735,15 @@
     },
     "androidx.lifecycle:lifecycle-runtime-android:aar": {
       "shasums": {
-        "jar": "b8eb997dd434d70eb97cbd6d1395b6337c6771717c7acd59f11c0853f3860284"
+        "jar": "2193a1573d623f37b20c7d27d1a8f903a72f651cc6f32e5794f85dda744fee75"
       },
-      "version": "2.8.7"
+      "version": "2.10.0"
     },
     "androidx.lifecycle:lifecycle-runtime-compose-android:aar": {
       "shasums": {
-        "jar": "b6803f906a89fd85c77df343dd4aeeb349125ca79e12d55d68d4cf42f42231f6"
+        "jar": "46e996d526829596f6db4626169a967f056fde7103507ff596bcd177b73c3675"
       },
-      "version": "2.9.4"
+      "version": "2.10.0"
     },
     "androidx.lifecycle:lifecycle-runtime-compose:aar": {
       "shasums": {
@@ -750,9 +753,9 @@
     },
     "androidx.lifecycle:lifecycle-runtime-ktx-android:aar": {
       "shasums": {
-        "jar": "b3d39c5dba5e207ef4c79d491a76500194c5ea6874157f05a15f01792c0cc4e7"
+        "jar": "871883703339f87284d232cb436e317c6f4af5612d92b43f27c6b13b92109fa7"
       },
-      "version": "2.8.7"
+      "version": "2.10.0"
     },
     "androidx.lifecycle:lifecycle-runtime-ktx:aar": {
       "shasums": {
@@ -768,9 +771,9 @@
     },
     "androidx.lifecycle:lifecycle-viewmodel-android:aar": {
       "shasums": {
-        "jar": "b362fec3dce121493acb8eb34532d8ff56b34bfaa949ea5a83acf5f4c3576f3e"
+        "jar": "9303287030027ca0b8cf98a748ddeb121ec1bfa1312c0069428e4765bbabce78"
       },
-      "version": "2.9.2"
+      "version": "2.10.0"
     },
     "androidx.lifecycle:lifecycle-viewmodel-compose-android:aar": {
       "shasums": {
@@ -807,18 +810,6 @@
         "jar": "cab404b05d5faed209104a2aef14c0cbb316ab9fabe4a8f037b043e5d2f43435"
       },
       "version": "2.9.2"
-    },
-    "androidx.loader:loader:aar": {
-      "shasums": {
-        "jar": "11f735cb3b55c458d470bed9e25254375b518b4b1bad6926783a7026db0f5025"
-      },
-      "version": "1.0.0"
-    },
-    "androidx.localbroadcastmanager:localbroadcastmanager:aar": {
-      "shasums": {
-        "jar": "e71c328ceef5c4a7d76f2d86df1b65d65fe2acf868b1a4efd84a3f34336186d8"
-      },
-      "version": "1.0.0"
     },
     "androidx.media3:media3-common:aar": {
       "shasums": {
@@ -906,21 +897,15 @@
     },
     "androidx.navigationevent:navigationevent-android:aar": {
       "shasums": {
-        "jar": "3fa191e3da2f6b601e944fb03a09a12278e49418dd1a9b22cd6b99f66e4283fd"
+        "jar": "ea7943bc61d52b42a7a2cbcbde14c9b10e7baf9e09a8fe54d8cb17d3bb5dbfd9"
       },
-      "version": "1.0.2"
+      "version": "1.1.0"
     },
     "androidx.navigationevent:navigationevent:aar": {
       "shasums": {
         "jar": "3069f1643e26a990bb71023524c852bb02036b8f9c5dbca8a1ca782064243c3b"
       },
       "version": "1.0.2"
-    },
-    "androidx.print:print:aar": {
-      "shasums": {
-        "jar": "1d5c7f3135a1bba661fc373fd72e11eb0a4adbb3396787826dd8e4190d5d9edd"
-      },
-      "version": "1.0.0"
     },
     "androidx.profileinstaller:profileinstaller:aar": {
       "shasums": {
@@ -930,21 +915,21 @@
     },
     "androidx.savedstate:savedstate-android:aar": {
       "shasums": {
-        "jar": "3d40baf742e6bdc90ada4650502e1d08c55cb5d8c045870d2c7c6d89f237d064"
+        "jar": "c191b2b0d3ed2f765743e634f213c0e8150825547810789fc13487332bfc9cd3"
       },
-      "version": "1.3.3"
+      "version": "1.5.0"
     },
     "androidx.savedstate:savedstate-compose-android:aar": {
       "shasums": {
-        "jar": "ec3c09338a005136697824e8ca52ebb4a51b055258e670d4bd2e1f992e32945e"
+        "jar": "01682c0de6796d31f9c7863bb18e65443e512e4dc95a13cc8c3d0d4931c2c10b"
       },
-      "version": "1.3.3"
+      "version": "1.5.0"
     },
     "androidx.savedstate:savedstate-compose:aar": {
       "shasums": {
-        "jar": "ddaf6bbd26865e0c22832990d7331a5df1917bc8ce916e79f56ca4dc945f17c4"
+        "jar": "a0d17c3ac1368b034ae9c3146d372f5c31893b53c15b632a2d9f0ec08c6ed084"
       },
-      "version": "1.3.3"
+      "version": "1.5.0"
     },
     "androidx.savedstate:savedstate-ktx:aar": {
       "shasums": {
@@ -1017,12 +1002,6 @@
         "jar": "6faa90390d1fdbf0adb9a99bf99de67b94c6c6f35aea9510593a9d17973736a2"
       },
       "version": "1.2.0"
-    },
-    "androidx.transition:transition:aar": {
-      "shasums": {
-        "jar": "248c45e1254d31181d2047b0b01394f09a2e539a5d9e89b773d53c62c96860f6"
-      },
-      "version": "1.6.0"
     },
     "androidx.versionedparcelable:versionedparcelable:aar": {
       "shasums": {
@@ -1813,6 +1792,7 @@
       "androidx.compose.ui:ui-util-android:aar",
       "androidx.core:core:aar",
       "androidx.emoji2:emoji2:aar",
+      "androidx.graphics:graphics-shapes-android:aar",
       "org.jetbrains.kotlin:kotlin-stdlib"
     ],
     "androidx.compose.foundation:foundation-layout-android:aar": [
@@ -1848,12 +1828,24 @@
       "androidx.compose.animation:animation-core-android:aar",
       "androidx.compose.foundation:foundation-android:aar",
       "androidx.compose.foundation:foundation-layout-android:aar",
+      "androidx.compose.material3:material3-ripple-android:aar",
       "androidx.compose.material:material-ripple-android:aar",
       "androidx.compose.runtime:runtime-android:aar",
       "androidx.compose.ui:ui-android:aar",
       "androidx.compose.ui:ui-text-android:aar",
       "androidx.compose.ui:ui-util-android:aar",
+      "androidx.graphics:graphics-shapes-android:aar",
       "androidx.lifecycle:lifecycle-common-java8",
+      "androidx.lifecycle:lifecycle-runtime-android:aar",
+      "org.jetbrains.kotlin:kotlin-stdlib"
+    ],
+    "androidx.compose.material3:material3-ripple-android:aar": [
+      "androidx.collection:collection-jvm",
+      "androidx.compose.animation:animation-android:aar",
+      "androidx.compose.foundation:foundation-android:aar",
+      "androidx.compose.runtime:runtime-android:aar",
+      "androidx.compose.ui:ui-util-android:aar",
+      "androidx.lifecycle:lifecycle-runtime-android:aar",
       "org.jetbrains.kotlin:kotlin-stdlib"
     ],
     "androidx.compose.material3:material3:aar": [
@@ -1863,7 +1855,9 @@
       "androidx.compose.material:material-ripple:aar",
       "androidx.compose.runtime:runtime:aar",
       "androidx.compose.ui:ui-text:aar",
-      "androidx.compose.ui:ui:aar"
+      "androidx.compose.ui:ui:aar",
+      "androidx.graphics:graphics-shapes:aar",
+      "org.jetbrains.kotlin:kotlin-stdlib"
     ],
     "androidx.compose.material:material-icons-core-android:aar": [
       "androidx.compose.ui:ui-android:aar",
@@ -1970,10 +1964,10 @@
       "androidx.lifecycle:lifecycle-runtime-compose-android:aar",
       "androidx.lifecycle:lifecycle-viewmodel-android:aar",
       "androidx.lifecycle:lifecycle-viewmodel-ktx:aar",
+      "androidx.navigationevent:navigationevent-android:aar",
       "androidx.profileinstaller:profileinstaller:aar",
       "androidx.savedstate:savedstate-compose-android:aar",
       "androidx.savedstate:savedstate-ktx:aar",
-      "androidx.transition:transition:aar",
       "androidx.window:window:aar",
       "org.jetbrains.kotlin:kotlin-stdlib",
       "org.jetbrains.kotlinx:kotlinx-coroutines-android",
@@ -2103,10 +2097,13 @@
       "androidx.concurrent:concurrent-futures",
       "androidx.core:core-viewtree:aar",
       "androidx.interpolator:interpolator:aar",
+      "androidx.lifecycle:lifecycle-common",
       "androidx.lifecycle:lifecycle-runtime:aar",
       "androidx.tracing:tracing:aar",
       "androidx.versionedparcelable:versionedparcelable:aar",
+      "com.google.guava:listenablefuture",
       "org.jetbrains.kotlin:kotlin-stdlib",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core",
       "org.jspecify:jspecify"
     ],
     "androidx.customview:customview-poolingcontainer:aar": [
@@ -2118,35 +2115,38 @@
       "androidx.core:core:aar",
       "org.jspecify:jspecify"
     ],
-    "androidx.dynamicanimation:dynamicanimation:aar": [
-      "androidx.collection:collection",
-      "androidx.core:core:aar",
-      "androidx.legacy:legacy-support-core-utils:aar"
-    ],
     "androidx.emoji2:emoji2:aar": [
       "androidx.annotation:annotation",
       "androidx.collection:collection",
       "androidx.core:core:aar",
       "androidx.lifecycle:lifecycle-process:aar",
-      "androidx.startup:startup-runtime:aar"
+      "androidx.startup:startup-runtime:aar",
+      "org.jetbrains.kotlin:kotlin-stdlib",
+      "org.jspecify:jspecify"
     ],
     "androidx.exifinterface:exifinterface:aar": [
       "androidx.annotation:annotation"
     ],
     "androidx.graphics:graphics-path:aar": [
+      "androidx.collection:collection",
       "androidx.core:core:aar",
+      "org.jetbrains.kotlin:kotlin-stdlib"
+    ],
+    "androidx.graphics:graphics-shapes-android:aar": [
+      "androidx.annotation:annotation-experimental:aar",
+      "androidx.annotation:annotation-jvm",
+      "androidx.collection:collection-jvm",
+      "androidx.core:core-ktx:aar",
+      "org.jetbrains.kotlin:kotlin-stdlib"
+    ],
+    "androidx.graphics:graphics-shapes:aar": [
+      "androidx.annotation:annotation",
+      "androidx.collection:collection",
+      "androidx.graphics:graphics-shapes-android:aar",
       "org.jetbrains.kotlin:kotlin-stdlib"
     ],
     "androidx.interpolator:interpolator:aar": [
       "androidx.annotation:annotation"
-    ],
-    "androidx.legacy:legacy-support-core-utils:aar": [
-      "androidx.annotation:annotation",
-      "androidx.core:core:aar",
-      "androidx.documentfile:documentfile:aar",
-      "androidx.loader:loader:aar",
-      "androidx.localbroadcastmanager:localbroadcastmanager:aar",
-      "androidx.print:print:aar"
     ],
     "androidx.lifecycle:lifecycle-common": [
       "androidx.annotation:annotation",
@@ -2196,19 +2196,22 @@
       "androidx.startup:startup-runtime:aar"
     ],
     "androidx.lifecycle:lifecycle-runtime-android:aar": [
-      "androidx.annotation:annotation",
+      "androidx.annotation:annotation-jvm",
       "androidx.arch.core:core-common",
       "androidx.arch.core:core-runtime:aar",
-      "androidx.lifecycle:lifecycle-common",
+      "androidx.core:core-viewtree:aar",
+      "androidx.lifecycle:lifecycle-common-jvm",
       "androidx.profileinstaller:profileinstaller:aar",
       "org.jetbrains.kotlin:kotlin-stdlib",
-      "org.jetbrains.kotlinx:kotlinx-coroutines-android"
+      "org.jetbrains.kotlinx:kotlinx-coroutines-android",
+      "org.jspecify:jspecify"
     ],
     "androidx.lifecycle:lifecycle-runtime-compose-android:aar": [
       "androidx.annotation:annotation-jvm",
       "androidx.compose.runtime:runtime-android:aar",
-      "androidx.lifecycle:lifecycle-runtime-ktx:aar",
-      "androidx.lifecycle:lifecycle-runtime:aar"
+      "androidx.lifecycle:lifecycle-runtime-android:aar",
+      "androidx.lifecycle:lifecycle-runtime-ktx-android:aar",
+      "org.jetbrains.kotlin:kotlin-stdlib"
     ],
     "androidx.lifecycle:lifecycle-runtime-compose:aar": [
       "androidx.annotation:annotation",
@@ -2217,8 +2220,8 @@
       "androidx.lifecycle:lifecycle-runtime:aar"
     ],
     "androidx.lifecycle:lifecycle-runtime-ktx-android:aar": [
-      "androidx.annotation:annotation",
-      "androidx.lifecycle:lifecycle-runtime:aar",
+      "androidx.annotation:annotation-jvm",
+      "androidx.lifecycle:lifecycle-runtime-android:aar",
       "org.jetbrains.kotlin:kotlin-stdlib",
       "org.jetbrains.kotlinx:kotlinx-coroutines-android"
     ],
@@ -2240,7 +2243,7 @@
       "androidx.core:core-viewtree:aar",
       "org.jetbrains.kotlin:kotlin-stdlib",
       "org.jetbrains.kotlinx:kotlinx-coroutines-android",
-      "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core"
     ],
     "androidx.lifecycle:lifecycle-viewmodel-compose-android:aar": [
       "androidx.annotation:annotation-jvm",
@@ -2292,15 +2295,6 @@
       "androidx.lifecycle:lifecycle-viewmodel-android:aar",
       "org.jetbrains.kotlin:kotlin-stdlib",
       "org.jetbrains.kotlinx:kotlinx-coroutines-core"
-    ],
-    "androidx.loader:loader:aar": [
-      "androidx.annotation:annotation",
-      "androidx.core:core:aar",
-      "androidx.lifecycle:lifecycle-livedata:aar",
-      "androidx.lifecycle:lifecycle-viewmodel:aar"
-    ],
-    "androidx.localbroadcastmanager:localbroadcastmanager:aar": [
-      "androidx.annotation:annotation"
     ],
     "androidx.media3:media3-common:aar": [
       "androidx.annotation:annotation",
@@ -2396,6 +2390,7 @@
     ],
     "androidx.navigationevent:navigationevent-android:aar": [
       "androidx.annotation:annotation-jvm",
+      "androidx.collection:collection-jvm",
       "androidx.compose.runtime:runtime-annotation-android:aar",
       "androidx.core:core-viewtree:aar",
       "org.jetbrains.kotlin:kotlin-stdlib",
@@ -2409,9 +2404,6 @@
       "org.jetbrains.kotlin:kotlin-stdlib",
       "org.jetbrains.kotlinx:kotlinx-coroutines-core"
     ],
-    "androidx.print:print:aar": [
-      "androidx.annotation:annotation"
-    ],
     "androidx.profileinstaller:profileinstaller:aar": [
       "androidx.annotation:annotation",
       "androidx.concurrent:concurrent-futures",
@@ -2420,23 +2412,26 @@
     ],
     "androidx.savedstate:savedstate-android:aar": [
       "androidx.annotation:annotation-jvm",
+      "androidx.collection:collection-jvm",
       "androidx.core:core-ktx:aar",
       "androidx.core:core-viewtree:aar",
       "androidx.lifecycle:lifecycle-common-jvm",
       "org.jetbrains.kotlin:kotlin-stdlib",
-      "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core",
       "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm"
     ],
     "androidx.savedstate:savedstate-compose-android:aar": [
       "androidx.annotation:annotation-jvm",
       "androidx.compose.runtime:runtime-android:aar",
       "androidx.core:core-ktx:aar",
-      "androidx.savedstate:savedstate-android:aar"
+      "androidx.savedstate:savedstate-android:aar",
+      "org.jetbrains.kotlin:kotlin-stdlib"
     ],
     "androidx.savedstate:savedstate-compose:aar": [
       "androidx.compose.runtime:runtime:aar",
       "androidx.savedstate:savedstate-compose-android:aar",
-      "androidx.savedstate:savedstate:aar"
+      "androidx.savedstate:savedstate:aar",
+      "org.jetbrains.kotlin:kotlin-stdlib"
     ],
     "androidx.savedstate:savedstate-ktx:aar": [
       "androidx.savedstate:savedstate:aar",
@@ -2500,13 +2495,6 @@
     ],
     "androidx.tracing:tracing:aar": [
       "androidx.annotation:annotation"
-    ],
-    "androidx.transition:transition:aar": [
-      "androidx.annotation:annotation",
-      "androidx.collection:collection",
-      "androidx.core:core:aar",
-      "androidx.dynamicanimation:dynamicanimation:aar",
-      "org.jspecify:jspecify"
     ],
     "androidx.versionedparcelable:versionedparcelable:aar": [
       "androidx.annotation:annotation",
@@ -3951,6 +3939,7 @@
       "androidx.compose.foundation:foundation-layout:aar",
       "androidx.compose.foundation:foundation:aar",
       "androidx.compose.material3:material3-android:aar",
+      "androidx.compose.material3:material3-ripple-android:aar",
       "androidx.compose.material3:material3:aar",
       "androidx.compose.material:material-icons-core-android:aar",
       "androidx.compose.material:material-icons-core:aar",
@@ -3988,12 +3977,12 @@
       "androidx.core:core:aar",
       "androidx.customview:customview-poolingcontainer:aar",
       "androidx.documentfile:documentfile:aar",
-      "androidx.dynamicanimation:dynamicanimation:aar",
       "androidx.emoji2:emoji2:aar",
       "androidx.exifinterface:exifinterface:aar",
       "androidx.graphics:graphics-path:aar",
+      "androidx.graphics:graphics-shapes-android:aar",
+      "androidx.graphics:graphics-shapes:aar",
       "androidx.interpolator:interpolator:aar",
-      "androidx.legacy:legacy-support-core-utils:aar",
       "androidx.lifecycle:lifecycle-common",
       "androidx.lifecycle:lifecycle-common-java8",
       "androidx.lifecycle:lifecycle-common-jvm",
@@ -4015,8 +4004,6 @@
       "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:aar",
       "androidx.lifecycle:lifecycle-viewmodel-savedstate:aar",
       "androidx.lifecycle:lifecycle-viewmodel:aar",
-      "androidx.loader:loader:aar",
-      "androidx.localbroadcastmanager:localbroadcastmanager:aar",
       "androidx.media3:media3-common:aar",
       "androidx.media3:media3-container:aar",
       "androidx.media3:media3-database:aar",
@@ -4033,7 +4020,6 @@
       "androidx.navigation:navigation-runtime:aar",
       "androidx.navigationevent:navigationevent-android:aar",
       "androidx.navigationevent:navigationevent:aar",
-      "androidx.print:print:aar",
       "androidx.profileinstaller:profileinstaller:aar",
       "androidx.savedstate:savedstate-android:aar",
       "androidx.savedstate:savedstate-compose-android:aar",
@@ -4050,7 +4036,6 @@
       "androidx.test:rules:aar",
       "androidx.test:runner:aar",
       "androidx.tracing:tracing:aar",
-      "androidx.transition:transition:aar",
       "androidx.versionedparcelable:versionedparcelable:aar",
       "androidx.window:window-core",
       "androidx.window:window-core-jvm",
@@ -4187,6 +4172,7 @@
       "androidx.compose.foundation:foundation-layout:aar",
       "androidx.compose.foundation:foundation:aar",
       "androidx.compose.material3:material3-android:aar",
+      "androidx.compose.material3:material3-ripple-android:aar",
       "androidx.compose.material3:material3:aar",
       "androidx.compose.material:material-icons-core-android:aar",
       "androidx.compose.material:material-icons-core:aar",
@@ -4224,12 +4210,12 @@
       "androidx.core:core:aar",
       "androidx.customview:customview-poolingcontainer:aar",
       "androidx.documentfile:documentfile:aar",
-      "androidx.dynamicanimation:dynamicanimation:aar",
       "androidx.emoji2:emoji2:aar",
       "androidx.exifinterface:exifinterface:aar",
       "androidx.graphics:graphics-path:aar",
+      "androidx.graphics:graphics-shapes-android:aar",
+      "androidx.graphics:graphics-shapes:aar",
       "androidx.interpolator:interpolator:aar",
-      "androidx.legacy:legacy-support-core-utils:aar",
       "androidx.lifecycle:lifecycle-common",
       "androidx.lifecycle:lifecycle-common-java8",
       "androidx.lifecycle:lifecycle-common-jvm",
@@ -4251,8 +4237,6 @@
       "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:aar",
       "androidx.lifecycle:lifecycle-viewmodel-savedstate:aar",
       "androidx.lifecycle:lifecycle-viewmodel:aar",
-      "androidx.loader:loader:aar",
-      "androidx.localbroadcastmanager:localbroadcastmanager:aar",
       "androidx.media3:media3-common:aar",
       "androidx.media3:media3-container:aar",
       "androidx.media3:media3-database:aar",
@@ -4269,7 +4253,6 @@
       "androidx.navigation:navigation-runtime:aar",
       "androidx.navigationevent:navigationevent-android:aar",
       "androidx.navigationevent:navigationevent:aar",
-      "androidx.print:print:aar",
       "androidx.profileinstaller:profileinstaller:aar",
       "androidx.savedstate:savedstate-android:aar",
       "androidx.savedstate:savedstate-compose-android:aar",
@@ -4286,7 +4269,6 @@
       "androidx.test:rules:aar",
       "androidx.test:runner:aar",
       "androidx.tracing:tracing:aar",
-      "androidx.transition:transition:aar",
       "androidx.versionedparcelable:versionedparcelable:aar",
       "androidx.window:window-core",
       "androidx.window:window-core-jvm",
@@ -4423,6 +4405,7 @@
       "androidx.compose.foundation:foundation-layout:aar",
       "androidx.compose.foundation:foundation:aar",
       "androidx.compose.material3:material3-android:aar",
+      "androidx.compose.material3:material3-ripple-android:aar",
       "androidx.compose.material3:material3:aar",
       "androidx.compose.material:material-icons-core-android:aar",
       "androidx.compose.material:material-icons-core:aar",
@@ -4460,12 +4443,12 @@
       "androidx.core:core:aar",
       "androidx.customview:customview-poolingcontainer:aar",
       "androidx.documentfile:documentfile:aar",
-      "androidx.dynamicanimation:dynamicanimation:aar",
       "androidx.emoji2:emoji2:aar",
       "androidx.exifinterface:exifinterface:aar",
       "androidx.graphics:graphics-path:aar",
+      "androidx.graphics:graphics-shapes-android:aar",
+      "androidx.graphics:graphics-shapes:aar",
       "androidx.interpolator:interpolator:aar",
-      "androidx.legacy:legacy-support-core-utils:aar",
       "androidx.lifecycle:lifecycle-common",
       "androidx.lifecycle:lifecycle-common-java8",
       "androidx.lifecycle:lifecycle-common-jvm",
@@ -4487,8 +4470,6 @@
       "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:aar",
       "androidx.lifecycle:lifecycle-viewmodel-savedstate:aar",
       "androidx.lifecycle:lifecycle-viewmodel:aar",
-      "androidx.loader:loader:aar",
-      "androidx.localbroadcastmanager:localbroadcastmanager:aar",
       "androidx.media3:media3-common:aar",
       "androidx.media3:media3-container:aar",
       "androidx.media3:media3-database:aar",
@@ -4505,7 +4486,6 @@
       "androidx.navigation:navigation-runtime:aar",
       "androidx.navigationevent:navigationevent-android:aar",
       "androidx.navigationevent:navigationevent:aar",
-      "androidx.print:print:aar",
       "androidx.profileinstaller:profileinstaller:aar",
       "androidx.savedstate:savedstate-android:aar",
       "androidx.savedstate:savedstate-compose-android:aar",
@@ -4522,7 +4502,6 @@
       "androidx.test:rules:aar",
       "androidx.test:runner:aar",
       "androidx.tracing:tracing:aar",
-      "androidx.transition:transition:aar",
       "androidx.versionedparcelable:versionedparcelable:aar",
       "androidx.window:window-core",
       "androidx.window:window-core-jvm",
@@ -4659,6 +4638,7 @@
       "androidx.compose.foundation:foundation-layout:aar",
       "androidx.compose.foundation:foundation:aar",
       "androidx.compose.material3:material3-android:aar",
+      "androidx.compose.material3:material3-ripple-android:aar",
       "androidx.compose.material3:material3:aar",
       "androidx.compose.material:material-icons-core-android:aar",
       "androidx.compose.material:material-icons-core:aar",
@@ -4696,12 +4676,12 @@
       "androidx.core:core:aar",
       "androidx.customview:customview-poolingcontainer:aar",
       "androidx.documentfile:documentfile:aar",
-      "androidx.dynamicanimation:dynamicanimation:aar",
       "androidx.emoji2:emoji2:aar",
       "androidx.exifinterface:exifinterface:aar",
       "androidx.graphics:graphics-path:aar",
+      "androidx.graphics:graphics-shapes-android:aar",
+      "androidx.graphics:graphics-shapes:aar",
       "androidx.interpolator:interpolator:aar",
-      "androidx.legacy:legacy-support-core-utils:aar",
       "androidx.lifecycle:lifecycle-common",
       "androidx.lifecycle:lifecycle-common-java8",
       "androidx.lifecycle:lifecycle-common-jvm",
@@ -4723,8 +4703,6 @@
       "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:aar",
       "androidx.lifecycle:lifecycle-viewmodel-savedstate:aar",
       "androidx.lifecycle:lifecycle-viewmodel:aar",
-      "androidx.loader:loader:aar",
-      "androidx.localbroadcastmanager:localbroadcastmanager:aar",
       "androidx.media3:media3-common:aar",
       "androidx.media3:media3-container:aar",
       "androidx.media3:media3-database:aar",
@@ -4741,7 +4719,6 @@
       "androidx.navigation:navigation-runtime:aar",
       "androidx.navigationevent:navigationevent-android:aar",
       "androidx.navigationevent:navigationevent:aar",
-      "androidx.print:print:aar",
       "androidx.profileinstaller:profileinstaller:aar",
       "androidx.savedstate:savedstate-android:aar",
       "androidx.savedstate:savedstate-compose-android:aar",
@@ -4758,7 +4735,6 @@
       "androidx.test:rules:aar",
       "androidx.test:runner:aar",
       "androidx.tracing:tracing:aar",
-      "androidx.transition:transition:aar",
       "androidx.versionedparcelable:versionedparcelable:aar",
       "androidx.window:window-core",
       "androidx.window:window-core-jvm",
@@ -4895,6 +4871,7 @@
       "androidx.compose.foundation:foundation-layout:aar",
       "androidx.compose.foundation:foundation:aar",
       "androidx.compose.material3:material3-android:aar",
+      "androidx.compose.material3:material3-ripple-android:aar",
       "androidx.compose.material3:material3:aar",
       "androidx.compose.material:material-icons-core-android:aar",
       "androidx.compose.material:material-icons-core:aar",
@@ -4932,12 +4909,12 @@
       "androidx.core:core:aar",
       "androidx.customview:customview-poolingcontainer:aar",
       "androidx.documentfile:documentfile:aar",
-      "androidx.dynamicanimation:dynamicanimation:aar",
       "androidx.emoji2:emoji2:aar",
       "androidx.exifinterface:exifinterface:aar",
       "androidx.graphics:graphics-path:aar",
+      "androidx.graphics:graphics-shapes-android:aar",
+      "androidx.graphics:graphics-shapes:aar",
       "androidx.interpolator:interpolator:aar",
-      "androidx.legacy:legacy-support-core-utils:aar",
       "androidx.lifecycle:lifecycle-common",
       "androidx.lifecycle:lifecycle-common-java8",
       "androidx.lifecycle:lifecycle-common-jvm",
@@ -4959,8 +4936,6 @@
       "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:aar",
       "androidx.lifecycle:lifecycle-viewmodel-savedstate:aar",
       "androidx.lifecycle:lifecycle-viewmodel:aar",
-      "androidx.loader:loader:aar",
-      "androidx.localbroadcastmanager:localbroadcastmanager:aar",
       "androidx.media3:media3-common:aar",
       "androidx.media3:media3-container:aar",
       "androidx.media3:media3-database:aar",
@@ -4977,7 +4952,6 @@
       "androidx.navigation:navigation-runtime:aar",
       "androidx.navigationevent:navigationevent-android:aar",
       "androidx.navigationevent:navigationevent:aar",
-      "androidx.print:print:aar",
       "androidx.profileinstaller:profileinstaller:aar",
       "androidx.savedstate:savedstate-android:aar",
       "androidx.savedstate:savedstate-compose-android:aar",
@@ -4994,7 +4968,6 @@
       "androidx.test:rules:aar",
       "androidx.test:runner:aar",
       "androidx.tracing:tracing:aar",
-      "androidx.transition:transition:aar",
       "androidx.versionedparcelable:versionedparcelable:aar",
       "androidx.window:window-core",
       "androidx.window:window-core-jvm",
@@ -5131,6 +5104,7 @@
       "androidx.compose.foundation:foundation-layout:aar",
       "androidx.compose.foundation:foundation:aar",
       "androidx.compose.material3:material3-android:aar",
+      "androidx.compose.material3:material3-ripple-android:aar",
       "androidx.compose.material3:material3:aar",
       "androidx.compose.material:material-icons-core-android:aar",
       "androidx.compose.material:material-icons-core:aar",
@@ -5168,12 +5142,12 @@
       "androidx.core:core:aar",
       "androidx.customview:customview-poolingcontainer:aar",
       "androidx.documentfile:documentfile:aar",
-      "androidx.dynamicanimation:dynamicanimation:aar",
       "androidx.emoji2:emoji2:aar",
       "androidx.exifinterface:exifinterface:aar",
       "androidx.graphics:graphics-path:aar",
+      "androidx.graphics:graphics-shapes-android:aar",
+      "androidx.graphics:graphics-shapes:aar",
       "androidx.interpolator:interpolator:aar",
-      "androidx.legacy:legacy-support-core-utils:aar",
       "androidx.lifecycle:lifecycle-common",
       "androidx.lifecycle:lifecycle-common-java8",
       "androidx.lifecycle:lifecycle-common-jvm",
@@ -5195,8 +5169,6 @@
       "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:aar",
       "androidx.lifecycle:lifecycle-viewmodel-savedstate:aar",
       "androidx.lifecycle:lifecycle-viewmodel:aar",
-      "androidx.loader:loader:aar",
-      "androidx.localbroadcastmanager:localbroadcastmanager:aar",
       "androidx.media3:media3-common:aar",
       "androidx.media3:media3-container:aar",
       "androidx.media3:media3-database:aar",
@@ -5213,7 +5185,6 @@
       "androidx.navigation:navigation-runtime:aar",
       "androidx.navigationevent:navigationevent-android:aar",
       "androidx.navigationevent:navigationevent:aar",
-      "androidx.print:print:aar",
       "androidx.profileinstaller:profileinstaller:aar",
       "androidx.savedstate:savedstate-android:aar",
       "androidx.savedstate:savedstate-compose-android:aar",
@@ -5230,7 +5201,6 @@
       "androidx.test:rules:aar",
       "androidx.test:runner:aar",
       "androidx.tracing:tracing:aar",
-      "androidx.transition:transition:aar",
       "androidx.versionedparcelable:versionedparcelable:aar",
       "androidx.window:window-core",
       "androidx.window:window-core-jvm",
