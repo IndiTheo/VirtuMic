@@ -1,0 +1,59 @@
+---
+
+renovate:
+  stage: infra
+  image: $CI_BASE_IMAGE
+  variables:
+    RENOVATE_AUTODISCOVER: "false"
+    RENOVATE_REPOSITORIES: "$CI_PROJECT_PATH"
+    MISE_CONFIG_FILE: "ci/build-mise.toml"
+    RENOVATE_ALLOWED_COMMANDS: '["^bash ci/sync_bazel_lockfiles\\.sh$"]'
+  cache:
+    key:
+      files:
+        - MODULE.bazel.lock
+      prefix: bazel-cache
+    paths:
+      - .bazel-cache/
+      - .bazel-repo-cache/
+    policy: pull-push
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web" && $RENOVATE_DRY_RUN'
+      variables:
+        RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
+        RENOVATE_CONFIG_FILE: "renovate.json"
+        RENOVATE_POST_UPGRADE_TASKS: '{"commands":["bash ci/sync_bazel_lockfiles.sh"],"fileFilters":["MODULE.bazel.lock","*_install.json"],"executionMode":"branch"}'
+        RENOVATE_PR_HOURLY_LIMIT: "0"
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      variables:
+        RENOVATE_DRY_RUN: "full"
+        RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
+        RENOVATE_CONFIG_FILE: "renovate.json"
+        RENOVATE_POST_UPGRADE_TASKS: '{"commands":["bash ci/sync_bazel_lockfiles.sh"],"fileFilters":["MODULE.bazel.lock","*_install.json"],"executionMode":"branch"}'
+        RENOVATE_PR_HOURLY_LIMIT: "0"
+  before_script:
+    - eval "$(mise activate bash --quiet)"
+    - npm install -g renovate@45
+  script:
+    - renovate $RENOVATE_EXTRA_FLAGS
+  artifacts:
+    when: always
+    paths:
+      - renovate-log.ndjson
+    expire_in: 7 days
+
+renovate-config-validator:
+  stage: lint
+  image: ghcr.io/renovatebot/renovate:45
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - renovate.json
+        - MODULE.bazel
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      changes:
+        - renovate.json
+        - MODULE.bazel
+  script:
+    - renovate-config-validator

@@ -1,13 +1,24 @@
 ---
 include:
-  - project: 'renovate-bot/renovate-runner'
-    file: '/templates/renovate.gitlab-ci.yml'
+  - local: 'ci/renovate.gitlab-ci.yml'
   - local: 'ci/keystore.gitlab-ci.yml'
+    rules:
+      - if: '$CI_PIPELINE_SOURCE != "schedule"'
   - local: 'ci/gpg.gitlab-ci.yml'
+    rules:
+      - if: '$CI_PIPELINE_SOURCE != "schedule"'
   - local: 'ci/build_ci_base_image.gitlab-ci.yml'
+    rules:
+      - if: '$CI_PIPELINE_SOURCE != "schedule"'
   - local: 'ci/lint.gitlab-ci.yml'
+    rules:
+      - if: '$CI_PIPELINE_SOURCE != "schedule"'
   - local: 'ci/sign.gitlab-ci.yml'
+    rules:
+      - if: '$CI_PIPELINE_SOURCE != "schedule"'
   - local: 'ci/release-metadata.gitlab-ci.yml'
+    rules:
+      - if: '$CI_PIPELINE_SOURCE != "schedule"'
 
 variables:
   CI_BASE_IMAGE: "$CI_REGISTRY_IMAGE:latest"
@@ -20,8 +31,8 @@ workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_PIPELINE_SOURCE == "web"
-    - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 stages:
   - infra
@@ -32,64 +43,9 @@ stages:
   - preview
   - release
 
-.skip_on_schedule: &skip_on_schedule
+.skip_on_schedule: &skip_on_schedule  # TODO: remove after all jobs are extracted out of main CI
   - if: '$CI_PIPELINE_SOURCE == "schedule"'
     when: never
-
-# Override the official template's stages to match our pipeline
-renovate-config-validator:
-  stage: lint
-  image: ghcr.io/renovatebot/renovate:45
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes:
-        - renovate.json
-        - MODULE.bazel
-  script:
-    - renovate-config-validator
-
-renovate:
-  stage: infra
-  image: $CI_BASE_IMAGE
-  variables:
-    RENOVATE_AUTODISCOVER: "false"
-    RENOVATE_REPOSITORIES: "$CI_PROJECT_PATH"
-    MISE_CONFIG_FILE: "ci/build-mise.toml"
-    RENOVATE_ALLOWED_COMMANDS: '["^bash ci/sync_bazel_lockfiles\\.sh$"]'
-  cache:
-    key:
-      files:
-        - MODULE.bazel.lock
-      prefix: bazel-cache
-    paths:
-      - .bazel-cache/
-      - .bazel-repo-cache/
-    policy: pull-push
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-    - if: '$CI_PIPELINE_SOURCE == "web" && $RENOVATE_DRY_RUN'
-      variables:
-        RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
-        RENOVATE_CONFIG_FILE: "renovate.json"
-        RENOVATE_POST_UPGRADE_TASKS: '{"commands":["bash ci/sync_bazel_lockfiles.sh"],"fileFilters":["MODULE.bazel.lock","*_install.json"],"executionMode":"branch"}'
-        RENOVATE_PR_HOURLY_LIMIT: "0"
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-      variables:
-        RENOVATE_DRY_RUN: "full"
-        RENOVATE_BASE_BRANCHES: "$CI_COMMIT_REF_NAME"
-        RENOVATE_CONFIG_FILE: "renovate.json"
-        RENOVATE_POST_UPGRADE_TASKS: '{"commands":["bash ci/sync_bazel_lockfiles.sh"],"fileFilters":["MODULE.bazel.lock","*_install.json"],"executionMode":"branch"}'
-        RENOVATE_PR_HOURLY_LIMIT: "0"
-  before_script:
-    - eval "$(mise activate bash --quiet)"
-    - npm install -g renovate@45
-  script:
-    - renovate $RENOVATE_EXTRA_FLAGS
-  artifacts:
-    when: always
-    paths:
-      - renovate-log.ndjson
-    expire_in: 7 days
 
 # --- BASE TEMPLATES & ANCHORS ---
 
@@ -168,6 +124,7 @@ renovate:
       dotenv: release.env
     when: always
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
       allow_failure: false
@@ -313,6 +270,7 @@ build_docs:
       - build/docs/
     expire_in: 1 week
   rules:
+    - *skip_on_schedule
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: true
@@ -328,6 +286,7 @@ publish_internal:core:
     MAVEN_USER: "gitlab-ci-token"
     MAVEN_PASSWORD: "${CI_JOB_TOKEN}"
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *core_changes
@@ -345,6 +304,7 @@ publish_internal:service:
     MAVEN_USER: "gitlab-ci-token"
     MAVEN_PASSWORD: "${CI_JOB_TOKEN}"
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *service_changes
@@ -366,6 +326,7 @@ stage_maven:core:
     - job: bootstrap_metadata
       artifacts: true
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
   before_script:
@@ -399,6 +360,7 @@ stage_maven:service:
     - job: bootstrap_metadata
       artifacts: true
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
   before_script:
@@ -430,6 +392,7 @@ stage_maven:service:
     JRELEASER_GPG_SECRET_KEY: "$GPG_SECRET_KEY"
     JRELEASER_GPG_PASSPHRASE: "$GPG_PASSPHRASE"
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
   before_script:
@@ -593,6 +556,7 @@ preview:core:
   variables:
     COMPONENT: "core"
   rules:
+    - *skip_on_schedule
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *core_changes
       when: manual
@@ -728,6 +692,7 @@ release:core:
     - job: bootstrap_metadata
       artifacts: true
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
 
@@ -741,5 +706,6 @@ release:service:
     - job: bootstrap_metadata
       artifacts: true
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
