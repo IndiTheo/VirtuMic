@@ -32,6 +32,10 @@ stages:
   - preview
   - release
 
+.skip_on_schedule: &skip_on_schedule
+  - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    when: never
+
 # Override the official template's stages to match our pipeline
 renovate-config-validator:
   stage: lint
@@ -221,6 +225,7 @@ build_library:core:
     - job: build_ci_base_image
       optional: true
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *core_changes
@@ -240,6 +245,7 @@ build_library:service:
     - job: build_ci_base_image
       optional: true
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *service_changes
@@ -286,6 +292,7 @@ build:app:
     - bazel build --config=ci --android_platforms=//:x86_64 //virtumic-app:virtumic
     - cp bazel-bin/virtumic-app/virtumic.apk dist/virtumic-x86_64.apk
   rules:
+    - *skip_on_schedule
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *app_changes
