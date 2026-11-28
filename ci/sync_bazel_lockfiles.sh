@@ -3,6 +3,8 @@
 #
 
 set -euo pipefail
+export MISE_CONFIG_FILE="ci/build-mise.toml"
+eval "$(mise activate bash --quiet)"
 
 # Repin only the lockfiles whose inputs actually changed.
 # The repin check is a signature check evaluated during repository-rule
